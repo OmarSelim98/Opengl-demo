@@ -7,16 +7,20 @@ void processInput(GLFWwindow* window);
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 ourColor;"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"	ourColor = aColor;\n"
 "}\0";
 
 const char* fragmentShaderSource[2] = { "#version 330 core\n"
 "out vec4 FragColor;\n"
+"in vec3 ourColor;\n"
 "void main()\n"
 "{\n"
-"FragColor= vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"FragColor= vec4(ourColor, 1.0f);\n"
 "}\0",  
 "#version 330 core\n"
 "out vec4 FragColor;\n"
@@ -27,15 +31,16 @@ const char* fragmentShaderSource[2] = { "#version 330 core\n"
 "}\0" };
 
 float first_triangle[] = {
-	-0.5f, 0.0f, 0.0f,
-	0.0f, 0.5f, 0.0f,
-	0.0f, 0.0f, 0.0f
+	//positions			//colors
+	-0.5f, 0.0f, 0.0f,	1.0f, 0.0f, 0.0f,
+	0.0f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f,	0.0f, 0.0f, 1.0f
 };
-float second_triangle[] = {
-	0.0f, 0.0f, 0.0f,
-	0.5f, 0.5f, 0.0f,
-	0.5f, 0.0f, 0.0f };
-//
+//float second_triangle[] = {
+//	0.0f, 0.0f, 0.0f,
+//	0.5f, 0.5f, 0.0f,
+//	0.5f, 0.0f, 0.0f };
+////
 //unsigned int indices[] = {
 //	0 , 1 , 2,
 //	0 , 2 , 3
@@ -102,7 +107,7 @@ void ChangeColor(unsigned int programID) {
 	}
 }
 
-void ConfigureTriangle(float(*triangle)[9], unsigned int buffer_index) {
+void ConfigureTriangle(float(*triangle)[18], unsigned int buffer_index) {
 	glBindVertexArray(VAOs[buffer_index]);
 
 	//vertex buffer object
@@ -110,9 +115,13 @@ void ConfigureTriangle(float(*triangle)[9], unsigned int buffer_index) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*triangle), *triangle, GL_STATIC_DRAW);
 
 	//set & enable vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//1st : position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
+	//2nd : color
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3*sizeof(float)) );
+	glEnableVertexAttribArray(1);
+	
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // It is safe here to unbind VBO before unbinding VAO, as glVertexAttribPointer already registers the vertex attribute's bound buffer (VBO in this case).
 	glBindVertexArray(0);
 }
@@ -152,11 +161,11 @@ int main() {
 
 	//fragment shaders
 	fragmentShader[0] = CreateShader(GL_FRAGMENT_SHADER, fragmentShaderSource[0]);
-	fragmentShader[1] = CreateShader(GL_FRAGMENT_SHADER, fragmentShaderSource[1]);
+	//fragmentShader[1] = CreateShader(GL_FRAGMENT_SHADER, fragmentShaderSource[1]);
 
 	//shader programs
 	shaderProgram[0] = CreateProgram(&vertexShader, &(fragmentShader[0]), true);
-	shaderProgram[1] = CreateProgram(&vertexShader, &(fragmentShader[1]), true);
+	//shaderProgram[1] = CreateProgram(&vertexShader, &(fragmentShader[1]), true);
 	/* ========== */
 
 	/* VERTEX ARRAY / VERTEX BUFFER */
@@ -168,7 +177,7 @@ int main() {
 
 
 	//Second TRIANGLE
-	ConfigureTriangle(&second_triangle, 1);
+	//ConfigureTriangle(&second_triangle, 1);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	/* ========== */
 
@@ -189,12 +198,12 @@ int main() {
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		glUseProgram(shaderProgram[1]);
+		//glUseProgram(shaderProgram[1]);
 
-		ChangeColor(shaderProgram[1]);
-		// draw second triangle
-		glBindVertexArray(VAOs[1]);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//ChangeColor(shaderProgram[1]);
+		//// draw second triangle
+		//glBindVertexArray(VAOs[1]);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0); // use EBO to draw triangles.
 
