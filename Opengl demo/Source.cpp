@@ -17,11 +17,13 @@ const char* fragmentShaderSource[2] = { "#version 330 core\n"
 "void main()\n"
 "{\n"
 "FragColor= vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0",  "#version 330 core\n"
+"}\0",  
+"#version 330 core\n"
 "out vec4 FragColor;\n"
+"uniform vec4 uniformColor;\n"
 "void main()\n"
 "{\n"
-"FragColor= vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"FragColor= uniformColor;\n"
 "}\0" };
 
 float first_triangle[] = {
@@ -79,6 +81,25 @@ unsigned int CreateProgram(unsigned int* vertexShaderID, unsigned int* fragmentS
 		glDeleteShader(*fragmentShaderID);
 	}
 	return programID;
+}
+
+void ChangeColor(unsigned int programID) {
+	/*MAKE SURE TO glUseProgram BEFORE TRYING TO UPDATE THE UNIFORM LOCATION*/
+
+	//change colors
+	float timeVal = (float) glfwGetTime(); // Seconds since the program has started.
+
+	float redVal = (sin(timeVal) / 2) + 0.5f;
+	float greenVal = (sin(timeVal) / 4) + 0.5f;
+	float blueVal = (sin(timeVal+0.25) / 2) + 0.5f;
+
+	//get uniform.
+	unsigned int uniformLocation = glGetUniformLocation(programID, "uniformColor");
+	
+	// Update Uniform
+	if (uniformLocation != -1) {
+		glUniform4f(uniformLocation, redVal, greenVal, blueVal, 1.0f);
+	}
 }
 
 void ConfigureTriangle(float(*triangle)[9], unsigned int buffer_index) {
@@ -168,8 +189,9 @@ int main() {
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-
 		glUseProgram(shaderProgram[1]);
+
+		ChangeColor(shaderProgram[1]);
 		// draw second triangle
 		glBindVertexArray(VAOs[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
