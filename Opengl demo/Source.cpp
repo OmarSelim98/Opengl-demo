@@ -9,10 +9,10 @@ void processInput(GLFWwindow* window);
 
 
 float first_triangle[] = {
-	//positions			//colors
-	-0.5f, 0.0f, 0.0f,	1.0f, 0.5f, 0.0f,
-	0.0f, 0.5f, 0.0f,	0.0f, 1.0f, 0.5f,
-	0.0f, 0.0f, 0.0f,	0.5f, 0.0f, 1.0f
+	// positions         // colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
 };
 
 unsigned int VAOs[2];
@@ -106,6 +106,9 @@ int main() {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
 
+	shader.use();
+	shader.setFloat("hOffset", 0.5f);
+
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
@@ -114,7 +117,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
-
 		// draw first triangle
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
