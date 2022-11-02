@@ -7,13 +7,14 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 
+float BACKGROUND_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 float vertices[] = {
 	//pos			 //color				//texcoords
-	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // top right
+	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // bottom right
 	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // top left
 };
 
 unsigned int indices[] = {
@@ -67,6 +68,8 @@ int main() {
 
 	stbi_set_flip_vertically_on_load(true);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/* VERTEX ARRAY / VERTEX BUFFER */
 	glGenVertexArrays(1, &VAO);
@@ -106,8 +109,11 @@ int main() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture1); // bind the generated 2d texture to the state
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, BACKGROUND_COLOR);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -116,7 +122,7 @@ int main() {
 
 	stbi_image_free(imgData);
 
-	imgData = stbi_load("ori-and-niro.png", &width, &height, &nChannles, 0);
+	imgData = stbi_load("ori-and-niro.png", &width, &height, &nChannles, 4);
 
 	if (imgData == NULL) {
 		std::cout << "Failed to lead texture" << std::endl;
@@ -147,7 +153,7 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		// Rendering commands start
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2], BACKGROUND_COLOR[3]);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		changeMixRatio(&shader);
