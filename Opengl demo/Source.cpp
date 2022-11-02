@@ -8,13 +8,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Ta
 void processInput(GLFWwindow* window);
 
 float BACKGROUND_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
+float brightness = 0.5f;
 float vertices[] = {
 	//pos			 //color				//texcoords
-	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   0.5f, 0.5f,   // top right
-	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   0.5f, 0.5f,   // bottom right
-	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.5f, 0.5f,   // bottom left
-	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.5f, 0.5f    // top left
+	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
 };
 
 unsigned int indices[] = {
@@ -166,6 +166,8 @@ int main() {
 
 
 		shader.use();
+		shader.setFloat("brightness", brightness);
+
 		// draw first triangle
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -193,5 +195,19 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		if(brightness < 1.0f)
+		{
+			brightness += 0.1f;
+			std::cout << brightness << std::endl;
+		}
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		if (brightness > 0.1f)
+		{
+			brightness -= 0.1f;
+			std::cout << brightness << std::endl;
+		}
 	}
 }
