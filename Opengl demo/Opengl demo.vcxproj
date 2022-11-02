@@ -134,13 +134,21 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\glad\src\glad.c" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="stbi_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="shader_class.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="basic_shader.fs" />
-    <None Include="basic_shader.vs" />
+    <None Include="basic_shader.frag" />
+    <None Include="basic_shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg" />
+    <Image Include="ori-and-niro.png" />
+    <Image Include="ori.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

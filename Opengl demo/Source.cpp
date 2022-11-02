@@ -1,70 +1,40 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include "stb_image.h"
 #include "shader_class.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 
 
-float first_triangle[] = {
-	// positions         // colors
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
+float vertices[] = {
+	//pos			 //color				//texcoords
+	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
 };
 
-unsigned int VAOs[2];
-unsigned int VBOs[2];
-unsigned int EBO;
-unsigned int vertexShader;
-unsigned int fragmentShader[2];
-unsigned int shaderProgram[2];
+unsigned int indices[] = {
+		0, 1, 3, // first triangle
+		1, 2, 3  // second triangle
+};
 
+unsigned int VAO, VBO, EBO;
 
+// for texture
+unsigned char* imgData;
+unsigned int texture1, texture2;
 
-void ChangeColor(unsigned int programID) {
-	/*MAKE SURE TO glUseProgram BEFORE TRYING TO UPDATE THE UNIFORM LOCATION*/
-
-	//change colors
-	float timeVal = (float) glfwGetTime(); // Seconds since the program has started.
-
-	float redVal = (sin(timeVal) / 2) + 0.5f;
-	float greenVal = (sin(timeVal) / 4) + 0.5f;
-	float blueVal = (sin(timeVal+0.25) / 2) + 0.5f;
-
-	//get uniform.
-	unsigned int uniformLocation = glGetUniformLocation(programID, "uniformColor");
-	
-	// Update Uniform
-	if (uniformLocation != -1) {
-		glUniform4f(uniformLocation, redVal, greenVal, blueVal, 1.0f);
-	}
-}
-
-void ConfigureTriangle(float(*triangle)[18], unsigned int buffer_index) {
-	glBindVertexArray(VAOs[buffer_index]);
-
-	//vertex buffer object
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[buffer_index]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(*triangle), *triangle, GL_STATIC_DRAW);
-
-	//set & enable vertex attributes
-	//1st : position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	//2nd : color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3*sizeof(float)) );
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // It is safe here to unbind VBO before unbinding VAO, as glVertexAttribPointer already registers the vertex attribute's bound buffer (VBO in this case).
-	glBindVertexArray(0);
+void changeMixRatio(Shader * shaderInstance) {
+	float timeSinceStart = glfwGetTime();
+	float mixValue = (sin(timeSinceStart) / 4) + 0.333;
+	shaderInstance->use();
+	shaderInstance->setFloat("mixValue",mixValue);
 }
 
 int main() {
-
-	
 
 	//Initiate GLFW.
 	glfwInit();
@@ -93,21 +63,85 @@ int main() {
 		return -1;
 	}
 
-	Shader shader("basic_shader.vs", "basic_shader.fs");
+	Shader shader("basic_shader.vert", "basic_shader.frag");
+
+	stbi_set_flip_vertically_on_load(true);
+
 
 	/* VERTEX ARRAY / VERTEX BUFFER */
-	glGenVertexArrays(2, VAOs);
-	glGenBuffers(2, VBOs);
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 
-	//FIRST TRIANGLE
-	ConfigureTriangle(&first_triangle, 0);
+	//bind buffers
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	//set & enable vertex attributes
+	//1st : position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	//2nd : color
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	//3rd: texture coordinates
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+
+	//Texture
+	int width, height, nChannles;
+	imgData = stbi_load("ori.jpg", &width, &height, &nChannles, 0);
+
+	if (imgData == NULL) {
+		std::cout << "Failed to lead texture" << std::endl;
+		return -1;
+	}
+	glGenTextures(1, &texture1); // generate a 2d texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1); // bind the generated 2d texture to the state
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData); //specify the 2d texture
+	glGenerateMipmap(GL_TEXTURE_2D); //generate mipmap for the bound 2d texture
+
+	stbi_image_free(imgData);
+
+	imgData = stbi_load("ori-and-niro.png", &width, &height, &nChannles, 0);
+
+	if (imgData == NULL) {
+		std::cout << "Failed to lead texture" << std::endl;
+		return -1;
+	}
+	glGenTextures(1, &texture2); // generate a 2d texture
+	glBindTexture(GL_TEXTURE_2D, texture2); // bind the generated 2d texture to the state
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData); //specify the 2d texture
+	glGenerateMipmap(GL_TEXTURE_2D); //generate mipmap for the bound 2d texture
+
+	stbi_image_free(imgData);
+
+	shader.use();
+	shader.setInt("texture1", 0);
+	shader.setInt("texture2", 1);
 
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
-
-	shader.use();
-	shader.setFloat("hOffset", 0.5f);
 
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
@@ -116,11 +150,20 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		changeMixRatio(&shader);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
+
 		shader.use();
 		// draw first triangle
-		glBindVertexArray(VAOs[0]);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
+		glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
 		// Rendering commands end
@@ -129,10 +172,9 @@ int main() {
 	}
 
 	//Clean resources on loop's end.
-	glDeleteVertexArrays(2, VAOs);
-	glDeleteBuffers(2, VBOs);
-	glDeleteProgram(shaderProgram[0]);
-	glDeleteProgram(shaderProgram[1]);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 
 	return 0;
