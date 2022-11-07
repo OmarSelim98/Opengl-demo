@@ -3,6 +3,9 @@
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 #include "shader_class.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
@@ -106,7 +109,6 @@ int main() {
 		return -1;
 	}
 	glGenTextures(1, &texture1); // generate a 2d texture
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture1); // bind the generated 2d texture to the state
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -145,6 +147,9 @@ int main() {
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
 
+
+	
+
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
@@ -167,6 +172,14 @@ int main() {
 
 		shader.use();
 		shader.setFloat("brightness", brightness);
+		//rotate -> translate -> scale
+		glm::mat4 transformMatrix = glm::mat4(1.0);
+		transformMatrix = glm::scale(transformMatrix, glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0.0f));
+		transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
+		transformMatrix = glm::rotate(transformMatrix, (float) glfwGetTime() , glm::vec3(0.0f, 0.0f, 1.0f));
+
+		unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
+		glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
 
 		// draw first triangle
 		glBindVertexArray(VAO);
