@@ -193,7 +193,7 @@ int main() {
 			transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
 			transformMatrix = glm::rotate(transformMatrix, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
-			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
+			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "model");
 			glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
 			renderer.Draw(va, ib, shader);
 		}
