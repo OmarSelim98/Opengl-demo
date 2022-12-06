@@ -18,7 +18,10 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 
-float brightness1 = 0.75f;
+
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
+float brightness1 = 1.0f;
 float brightness2 = 0.75f;
 
 float clearColors[3] = {0.0f,0.0f,0.0f};
@@ -56,7 +59,7 @@ int main() {
 
 	//Create a window and set it as a context to the current thread.
 	//Abort if the window can't be created.
-	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGl Demo", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGl Demo", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to initialize GLFW window" << std::endl;
 		glfwTerminate();
@@ -157,6 +160,15 @@ int main() {
 
 	Renderer renderer;
 
+	// Model view Projection init
+	glm::mat4 model = glm::mat4(1.0);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
+
+	glm::mat4 view = glm::mat4(1.0);
+	view = glm::translate(view,glm::vec3(0.0f,0.0f,0.0f));
+
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
@@ -187,27 +199,16 @@ int main() {
 		{
 			shader.Bind();
 			shader.setFloat("brightness", brightness1);
-			//rotate -> translate -> scale
-			glm::mat4 transformMatrix = glm::mat4(1.0);
-			transformMatrix = glm::scale(transformMatrix, glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0.0f));
-			transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
-			transformMatrix = glm::rotate(transformMatrix, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+			//rotate -> translate -> scale (str)
 
-			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
-			glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
-			renderer.Draw(va, ib, shader);
-		}
-		{
-			shader.Bind();
-			shader.setFloat("brightness", brightness2);
-			//rotate -> translate -> scale
-			glm::mat4 transformMatrix = glm::mat4(1.0);
-			transformMatrix = glm::scale(transformMatrix, glm::vec3(cos(glfwGetTime()), sin(glfwGetTime()), 0.0f));
-			transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
-			transformMatrix = glm::rotate(transformMatrix, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+			unsigned int modelUniform = glGetUniformLocation(shader.ID, "model");
+			unsigned int viewUniform = glGetUniformLocation(shader.ID, "view");
+			unsigned int projectionUniform = glGetUniformLocation(shader.ID, "projection");
 
-			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
-			glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
+			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
+			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+
 			renderer.Draw(va, ib, shader);
 		}
 		ImGui::Render();

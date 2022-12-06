@@ -9,7 +9,11 @@ void Renderer::Clear(float* color) const {
 	glClearColor(color[0], color[1], color[2], 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
-
+void Renderer::Draw(const VertexArray& va, unsigned int size) const {
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, size);
+	va.UnBind();
+}
 void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
 	va.Bind();
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
