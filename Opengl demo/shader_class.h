@@ -46,9 +46,13 @@ public:
 		ID = CreateProgram(vertexID,fragmentID,true);
 	}
 
-	void use()
+	void Bind()
 	{
 		glUseProgram(ID);
+	}
+	void UnBind()
+	{
+		glUseProgram(0);
 	}
 
 	void setBool(const std::string& name, bool value) {

@@ -1,17 +1,27 @@
 #include <iostream>
 #include <glad/glad.h>
+#include <ImGUI/imgui.h>
+#include <ImGUI/imgui_impl_glfw.h>
+#include <ImGUI/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 #include "shader_class.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "VertexBufferLayout.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "Renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 
-float BACKGROUND_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-float brightness = 0.5f;
+float brightness1 = 0.75f;
+float brightness2 = 0.75f;
+
+float clearColors[3] = {0.0f,0.0f,0.0f};
 float vertices[] = {
 	//pos			 //color				//texcoords
 	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
@@ -25,17 +35,15 @@ unsigned int indices[] = {
 		1, 2, 3  // second triangle
 };
 
-unsigned int VAO, VBO, EBO;
-
 // for texture
 unsigned char* imgData;
 unsigned int texture1, texture2;
 
-void changeMixRatio(Shader * shaderInstance) {
+void changeMixRatio(Shader& shaderInstance) {
 	float timeSinceStart = glfwGetTime();
 	float mixValue = (sin(timeSinceStart) / 4) + 0.333;
-	shaderInstance->use();
-	shaderInstance->setFloat("mixValue",mixValue);
+	shaderInstance.Bind();
+	shaderInstance.setFloat("mixValue", mixValue);
 }
 
 int main() {
@@ -67,38 +75,34 @@ int main() {
 		return -1;
 	}
 
-	Shader shader("basic_shader.vert", "basic_shader.frag");
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
 
 	stbi_set_flip_vertically_on_load(true);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	/* VERTEX ARRAY / VERTEX BUFFER */
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	Shader shader("basic_shader.vert", "basic_shader.frag");
 
-	//bind buffers
-	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	VertexArray va;
+	va.Bind();
 
-	//set & enable vertex attributes
-	//1st : position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	//2nd : color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	//3rd: texture coordinates
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	VertexBuffer vb(vertices, sizeof(vertices));
+	IndexBuffer ib(indices, 6);
 
+	VertexBufferLayout layout;
+	layout.AddElement<float>(3);
+	layout.AddElement<float>(3);
+	layout.AddElement<float>(2);
+
+	va.AddVertexBuffer(vb, layout);
 
 	//Texture
 	int width, height, nChannles;
@@ -143,49 +147,71 @@ int main() {
 
 	stbi_image_free(imgData);
 
-	shader.use();
+	shader.Bind();
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
+	shader.UnBind();
+	va.UnBind();
+	vb.UnBind();
+	ib.UnBind();
 
-
-	
+	Renderer renderer;
 
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
-
+	bool show_demo_window = true;
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
-		processInput(window);
+		//processInput(window);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		{
+			ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+			ImGui::ColorEdit3("Clear color", (float*)&clearColors); // Edit 3 floats representing a color
+			ImGui::SliderFloat("Brightness", &brightness1, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
 		// Rendering commands start
-		glClearColor(BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2], BACKGROUND_COLOR[3]);
-		glClear(GL_COLOR_BUFFER_BIT);
+		renderer.Clear(clearColors);
 
-		changeMixRatio(&shader);
+		changeMixRatio(shader);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
+		{
+			shader.Bind();
+			shader.setFloat("brightness", brightness1);
+			//rotate -> translate -> scale
+			glm::mat4 transformMatrix = glm::mat4(1.0);
+			transformMatrix = glm::scale(transformMatrix, glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0.0f));
+			transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
+			transformMatrix = glm::rotate(transformMatrix, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
+			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
+			glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
+			renderer.Draw(va, ib, shader);
+		}
+		{
+			shader.Bind();
+			shader.setFloat("brightness", brightness2);
+			//rotate -> translate -> scale
+			glm::mat4 transformMatrix = glm::mat4(1.0);
+			transformMatrix = glm::scale(transformMatrix, glm::vec3(cos(glfwGetTime()), sin(glfwGetTime()), 0.0f));
+			transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
+			transformMatrix = glm::rotate(transformMatrix, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		shader.use();
-		shader.setFloat("brightness", brightness);
-		//rotate -> translate -> scale
-		glm::mat4 transformMatrix = glm::mat4(1.0);
-		transformMatrix = glm::scale(transformMatrix, glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0.0f));
-		transformMatrix = glm::translate(transformMatrix, glm::vec3(0.25f, 0.25f, 0.0f));
-		transformMatrix = glm::rotate(transformMatrix, (float) glfwGetTime() , glm::vec3(0.0f, 0.0f, 1.0f));
-
-		unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
-		glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
-
-		// draw first triangle
-		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+			unsigned int matrixUniformLoc = glGetUniformLocation(shader.ID, "transform");
+			glUniformMatrix4fv(matrixUniformLoc, 1, GL_FALSE, glm::value_ptr(transformMatrix));
+			renderer.Draw(va, ib, shader);
+		}
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// Rendering commands end
 		glfwSwapBuffers(window);
@@ -193,9 +219,9 @@ int main() {
 	}
 
 	//Clean resources on loop's end.
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 
 	return 0;
@@ -209,18 +235,5 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		if(brightness < 1.0f)
-		{
-			brightness += 0.1f;
-			std::cout << brightness << std::endl;
-		}
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		if (brightness > 0.1f)
-		{
-			brightness -= 0.1f;
-			std::cout << brightness << std::endl;
-		}
-	}
+	
 }
