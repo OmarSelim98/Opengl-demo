@@ -11,5 +11,5 @@ uniform float brightness;
 
 void main()
 {
-FragColor= mix(texture(texture1, texCoords), texture(texture2, texCoords),mixValue) * vec4(brightness);
+FragColor= mix(texture(texture1, texCoords), texture(texture2, texCoords),0.) * vec4(brightness);
 }
