@@ -14,13 +14,13 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Renderer.h"
+#include "Camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void updateDeltaTime();
-void setupCamera();
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
@@ -29,84 +29,61 @@ float brightness2 = 0.75f;
 
 float clearColors[3] = { 0.0f,0.0f,0.0f };
 float vertices[] = {
-	//pos					 //color				//texcoords
-	-0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-   -0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-   -0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-   -0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-   -0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-   -0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-   -0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-   -0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-   -0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-   -0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-   -0.5f, -0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-   -0.5f, -0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-   -0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-   -0.5f,  0.5f,  0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-   -0.5f,  0.5f, -0.5f,	 0.0f, 0.0f, 0.0f,		0.0f, 1.0f
-};
-glm::vec3 cubePositions[] = {
-	glm::vec3(0.0f,  0.0f,  0.0f),
-	glm::vec3(2.0f,  5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f,  3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f,  2.0f, -2.5f),
-	glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
 unsigned int indices[] = {
 		0, 1, 3, // first triangle
 		1, 2, 3  // second triangle
 };
 //Camera Config
-float cameraSpeed = 2.5f;
-const float mouseSensitivity = 0.1f;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-float cameraYaw = -90.0f; // make sure that the camera initially looks at the negative z-axis.
-float cameraPitch = 0.0f;
-float cameraLastX = (float)WINDOW_WIDTH / 2.0f;
-float cameraLastY = (float)WINDOW_HEIGHT / 2.0f;
-bool firstMouse = false;
-float fov = 45.0f;
-glm::vec3 direction;
 // for texture
 unsigned char* imgData;
 unsigned int texture1, texture2;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
 
 void changeMixRatio(Shader& shaderInstance) {
 	float timeSinceStart = glfwGetTime();
@@ -136,8 +113,7 @@ int main() {
 	glfwSwapInterval(1);
 	//Adjust viewport to the resized window.
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+
 	//Abort if glad hasn't loaded all opengl's functions pointers.
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -145,7 +121,6 @@ int main() {
 		return -1;
 	}
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //capture mouse.
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -160,77 +135,46 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	/* Init cam here */
+
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 	Shader shader("basic_shader.vert", "basic_shader.frag");
+	Shader lightningShader("lightning_shader.vert", "lightning_shader.frag");
 
-
-
-	VertexArray va;
-	va.Bind();
+	// va, vb and layout for an object
+	VertexArray objectVA;
+	objectVA.Bind();
 
 	VertexBuffer vb(vertices, sizeof(vertices));
-	IndexBuffer ib(indices, 6);
 
-	VertexBufferLayout layout;
-	layout.AddElement<float>(3);
-	layout.AddElement<float>(3);
-	layout.AddElement<float>(2);
+	VertexBufferLayout objectLayout;
+	objectLayout.AddElement<float>(3); // position vector
+	objectLayout.AddElement<float>(3); // normals vector
 
-	va.AddVertexBuffer(vb, layout);
+	objectVA.AddVertexBuffer(vb, objectLayout);
 
-	//Texture
-	int width, height, nChannles;
-	imgData = stbi_load("ori.jpg", &width, &height, &nChannles, 0);
-
-	if (imgData == NULL) {
-		std::cout << "Failed to lead texture" << std::endl;
-		return -1;
-	}
-	glGenTextures(1, &texture1); // generate a 2d texture
-	glBindTexture(GL_TEXTURE_2D, texture1); // bind the generated 2d texture to the state
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, BACKGROUND_COLOR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData); //specify the 2d texture
-	glGenerateMipmap(GL_TEXTURE_2D); //generate mipmap for the bound 2d texture
-
-	stbi_image_free(imgData);
-
-	imgData = stbi_load("ori-and-niro.png", &width, &height, &nChannles, 4);
-
-	if (imgData == NULL) {
-		std::cout << "Failed to lead texture" << std::endl;
-		return -1;
-	}
-	glGenTextures(1, &texture2); // generate a 2d texture
-	glBindTexture(GL_TEXTURE_2D, texture2); // bind the generated 2d texture to the state
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData); //specify the 2d texture
-	glGenerateMipmap(GL_TEXTURE_2D); //generate mipmap for the bound 2d texture
-
-	stbi_image_free(imgData);
-
-	shader.Bind();
-	shader.setInt("texture1", 0);
-	shader.setInt("texture2", 1);
-	shader.UnBind();
-	va.UnBind();
+	objectVA.UnBind();
 	vb.UnBind();
-	ib.UnBind();
+
+	// create a va for light, with the same vb
+	VertexArray lightVA;
+	lightVA.Bind();
+
+	VertexBufferLayout lightLayout;
+	lightLayout.SetStrideManually(true);
+	lightLayout.SetStride(6 * sizeof(float));
+	lightLayout.AddElement<float>(3);
+
+	lightVA.AddVertexBuffer(vb, lightLayout);
+
+	lightVA.UnBind();
+	vb.UnBind();
 
 	Renderer renderer;
 
-
+	camera.EnableMovement(window);
 
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
@@ -240,7 +184,6 @@ int main() {
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
 		updateDeltaTime();
-		setupCamera();
 		processInput(window);
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -250,48 +193,55 @@ int main() {
 			ImGui::ColorEdit3("Clear color", (float*)&clearColors); // Edit 3 floats representing a color
 			//ImGui::SliderFloat("Brightness", &brightness1, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			//ImGui::SliderFloat("ModelRotationZ", &rotation, -180.0f, 180.0);
-			ImGui::Text("FOV : %.1f", fov);
+			ImGui::Text("FOV : %.1f", camera.GetFOV());
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			if (ImGui::Button("Enable Movement"))
+				camera.EnableMovement(window);
+			ImGui::SameLine();
+			if (camera.IsMovementEnabled())
+				ImGui::Text("Press F5 to exit camera focus");
 			ImGui::End();
 		}
 		// Rendering commands start
 		renderer.Clear(clearColors);
-		cameraSpeed = 2.5f * deltaTime;
+		camera.ApplySmoothMovement(deltaTime);
 
-		
 
-		// Model view Projection init
+		// Render Object
 		glm::mat4 model = glm::mat4(1.0);
 		glm::mat4 view = glm::mat4(1.0);
 		glm::mat4 projection;
 
-		projection = glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		projection = glm::perspective(glm::radians(camera.GetFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		view = camera.GetViewMatrix();
+
+
+		glm::vec3 lightPos = glm::vec3(0, (float)cos(glfwGetTime()) * 2, -2.0);
+
+		model = glm::scale(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0.5f));
+		model = translate(model, lightPos);
+		lightningShader.Bind();
+		lightningShader.setMat4("projection", projection);
+		lightningShader.setMat4("view", view);
+		lightningShader.setMat4("model", model);
+
+		renderer.Draw(lightVA, 36);
+
+		model = glm::scale(glm::mat4(1.0), glm::vec3(2.0f, 2.0f, 2.0f));
+		model = translate(model, glm::vec3(0.0, 0.0, -4.0));
 		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(1.0f, 0.25f, 0.0f));
 
-		changeMixRatio(shader);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-
 		shader.Bind();
-		shader.setFloat("brightness", brightness1);
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
-		//rotate -> translate -> scale (str)
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			shader.setMat4("model", model);
+		shader.setMat4("model", model);
+		shader.setVec3("objectColor", glm::vec3(0.3f, 0.3f, 0.6f));
+		shader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setVec3("lightPos", lightPos);
+		shader.setVec3("viewPos", camera.GetPosition());
 
-			renderer.Draw(va, 36);
-		}
+		renderer.Draw(objectVA, 36);
+
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -319,69 +269,29 @@ void updateDeltaTime() {
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 }
-void setupCamera() {
-
-}
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-
-	if (firstMouse) // initially set to true
-	{
-		cameraLastX = xpos;
-		cameraLastY = ypos;
-		firstMouse = false;
-	}
-
-	// calculate new offsets
-	float xOffset = xpos - cameraLastX;
-	float yOffset = -(ypos - cameraLastY);
-
-	//update last offsets
-	cameraLastX = xpos;
-	cameraLastY = ypos;
-
-	//adjust offsets to a sensitivity factor
-	xOffset *= mouseSensitivity;
-	yOffset *= mouseSensitivity;
-
-	//update yaw (x/z) and pitch (y) values
-	cameraYaw += xOffset;
-	cameraPitch += yOffset;
-
-	//constraints the pitch angle
-	if (cameraPitch > 89.0f)
-		cameraPitch = 89.0f;
-	if (cameraPitch < -89.0f)
-		cameraPitch = -89.0f;
-
-	//update direction vector
-	direction.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-	direction.y = sin(glm::radians(cameraPitch));
-	direction.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-	cameraFront = glm::normalize(direction);
+	camera.OnCursorPositionChange(window, xpos, ypos);
 }
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-	fov -= (float)yoffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera.OnScroll(window, xoffset, yoffset);
 }
 void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cameraPos.x += cameraSpeed * cameraFront.x;
-		cameraPos.z += cameraSpeed * cameraFront.z;
+		camera.StepForward();
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cameraPos.x -= cameraSpeed * cameraFront.x;
-		cameraPos.z -= cameraSpeed * cameraFront.z;
+		camera.StepBackward();
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+		camera.StepRight();
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cameraPos -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+		camera.StepLeft();
+	}
+	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS) {
+		camera.DisableMovement(window);
 	}
 }

@@ -66,6 +66,9 @@
     <ClCompile Include="..\..\..\Opengl Dependencies\Includes\ImGUI\imgui_widgets.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader_class.h">
@@ -95,12 +98,21 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="basic_shader.vert">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="basic_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="lightning_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="lightning_shader.vert">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>

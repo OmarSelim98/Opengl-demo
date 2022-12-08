@@ -141,6 +141,7 @@
     <ClCompile Include="..\..\..\Opengl Dependencies\Includes\ImGUI\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\..\..\Opengl Dependencies\Includes\ImGUI\imgui_tables.cpp" />
     <ClCompile Include="..\..\..\Opengl Dependencies\Includes\ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Renderer.h" />
@@ -163,6 +165,8 @@
   <ItemGroup>
     <None Include="basic_shader.frag" />
     <None Include="basic_shader.vert" />
+    <None Include="lightning_shader.frag" />
+    <None Include="lightning_shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg" />
