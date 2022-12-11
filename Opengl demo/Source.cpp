@@ -15,6 +15,8 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 #include "Camera.h"
+#include "MaterialPresets.h"
+#include "Texture.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
@@ -22,54 +24,55 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void updateDeltaTime();
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
 float brightness1 = 1.0f;
 float brightness2 = 0.75f;
 
 float clearColors[3] = { 0.0f,0.0f,0.0f };
 float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	// positions          // normals           // texture coords
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -83,7 +86,9 @@ unsigned int texture1, texture2;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
+Camera camera(glm::vec3(-4.0f, 0.0f, 4.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
+
+std::vector<MaterialPreset> materialPresets;
 
 void changeMixRatio(Shader& shaderInstance) {
 	float timeSinceStart = glfwGetTime();
@@ -152,8 +157,11 @@ int main() {
 	VertexBufferLayout objectLayout;
 	objectLayout.AddElement<float>(3); // position vector
 	objectLayout.AddElement<float>(3); // normals vector
+	objectLayout.AddElement<float>(2); // texture vector
 
 	objectVA.AddVertexBuffer(vb, objectLayout);
+
+	Texture containerTexture("container.jpg");
 
 	objectVA.UnBind();
 	vb.UnBind();
@@ -164,7 +172,7 @@ int main() {
 
 	VertexBufferLayout lightLayout;
 	lightLayout.SetStrideManually(true);
-	lightLayout.SetStride(6 * sizeof(float));
+	lightLayout.SetStride(8 * sizeof(float));
 	lightLayout.AddElement<float>(3);
 
 	lightVA.AddVertexBuffer(vb, lightLayout);
@@ -176,6 +184,9 @@ int main() {
 
 	camera.EnableMovement(window);
 
+	int selectedMaterial = 0;
+	materialPresets = ImportMaterials();
+	Light light;
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
@@ -194,12 +205,38 @@ int main() {
 			//ImGui::SliderFloat("Brightness", &brightness1, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			//ImGui::SliderFloat("ModelRotationZ", &rotation, -180.0f, 180.0);
 			ImGui::Text("FOV : %.1f", camera.GetFOV());
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+			if (ImGui::CollapsingHeader("Light")) {
+				ImGui::ColorEdit3("Color", (float*)&light.color);
+				//ImGui::SliderFloat("Ambient", );
+				ImGui::SliderFloat("Diffuse", &light.diffuse, 0.0f, 1.0f);
+				ImGui::SliderFloat("Specular", &light.specular, 0.0f, 1.0f);
+			}
+
+			if (ImGui::CollapsingHeader("Material")) {
+				if (ImGui::BeginCombo("Material presets", materialPresets[selectedMaterial].name.c_str())) {
+					for (int i = 0; i < materialPresets.size(); ++i) {
+						const bool isSelected = (selectedMaterial == i);
+						if (ImGui::Selectable(materialPresets[i].name.c_str(), isSelected)) {
+							selectedMaterial = i;
+						}
+
+						// Set the initial focus when opening the combo
+						// (scrolling + keyboard navigation focus)
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
 			if (ImGui::Button("Enable Movement"))
 				camera.EnableMovement(window);
 			ImGui::SameLine();
 			if (camera.IsMovementEnabled())
 				ImGui::Text("Press F5 to exit camera focus");
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
 			ImGui::End();
 		}
 		// Rendering commands start
@@ -216,14 +253,14 @@ int main() {
 		view = camera.GetViewMatrix();
 
 
-		glm::vec3 lightPos = glm::vec3(0, (float)cos(glfwGetTime()) * 2, -2.0);
-
+		light.position = glm::vec3(2.0, (float)cos(glfwGetTime()) * 2, -2.0);
 		model = glm::scale(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0.5f));
-		model = translate(model, lightPos);
+		model = translate(model, light.position);
 		lightningShader.Bind();
 		lightningShader.setMat4("projection", projection);
 		lightningShader.setMat4("view", view);
 		lightningShader.setMat4("model", model);
+		lightningShader.setVec3("lightColor", light.color[0], light.color[1], light.color[2]);
 
 		renderer.Draw(lightVA, 36);
 
@@ -235,10 +272,18 @@ int main() {
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
 		shader.setMat4("model", model);
-		shader.setVec3("objectColor", glm::vec3(0.3f, 0.3f, 0.6f));
-		shader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		shader.setVec3("lightPos", lightPos);
+		//shader.setVec3("objectColor", glm::vec3(0.3f, 0.3f, 0.6f));
 		shader.setVec3("viewPos", camera.GetPosition());
+		shader.setVec3("light.position", light.position);
+		shader.setVec3("light.color", light.color[0], light.color[1], light.color[2]);
+		shader.setVec3("light.diffuse", light.getDiffuseVector());
+		shader.setVec3("light.ambient", light.getAmbientVector());
+		shader.setVec3("light.specular", glm::vec3(light.specular));
+		//set material
+		shader.setVec3("material.ambient", materialPresets[selectedMaterial].ambient);
+		shader.setVec3("material.diffuse", materialPresets[selectedMaterial].diffuse);
+		shader.setVec3("material.specular", materialPresets[selectedMaterial].specular);
+		shader.setFloat("material.shininess", materialPresets[selectedMaterial].shininess);
 
 		renderer.Draw(objectVA, 36);
 

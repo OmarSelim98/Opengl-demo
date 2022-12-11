@@ -8,7 +8,7 @@ private:
 	GLFWwindow* m_GlWindow;
 	bool m_FirstMouse = true;
 	bool m_CanMove = false;
-	float m_Yaw = -90.0f; // make sure that the camera initially looks at the negative z-axis.
+	float m_Yaw = -45.0f; // make sure that the camera initially looks at the negative z-axis.
 	float m_Pitch = 0.0f;
 	float m_LastX;//= (float)WINDOW_WIDTH / 2.0f;
 	float m_LastY;//= (float)WINDOW_HEIGHT / 2.0f;
