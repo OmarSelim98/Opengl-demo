@@ -90,13 +90,6 @@ Camera camera(glm::vec3(-4.0f, 0.0f, 4.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
 
 std::vector<MaterialPreset> materialPresets;
 
-void changeMixRatio(Shader& shaderInstance) {
-	float timeSinceStart = glfwGetTime();
-	float mixValue = (sin(timeSinceStart) / 4) + 0.333;
-	shaderInstance.Bind();
-	shaderInstance.setFloat("mixValue", mixValue);
-}
-
 int main() {
 
 	//Initiate GLFW.
@@ -137,8 +130,8 @@ int main() {
 	stbi_set_flip_vertically_on_load(true);
 
 	glEnable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST); // z buffer
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // blending mode
 
 	/* Init cam here */
 
@@ -161,7 +154,9 @@ int main() {
 
 	objectVA.AddVertexBuffer(vb, objectLayout);
 
-	Texture containerTexture("container.jpg");
+	Texture containerTexture("container2.png");
+	Texture containerSpecularTexture("container2_specular.png");
+	Texture containerEmissionTexture("container2_emission.png");
 
 	objectVA.UnBind();
 	vb.UnBind();
@@ -264,9 +259,11 @@ int main() {
 
 		renderer.Draw(lightVA, 36);
 
-		model = glm::scale(glm::mat4(1.0), glm::vec3(2.0f, 2.0f, 2.0f));
+		model = glm::scale(glm::mat4(1.0), glm::vec3(3.0f, 3.0f, 3.0f));
 		model = translate(model, glm::vec3(0.0, 0.0, -4.0));
 		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(1.0f, 0.25f, 0.0f));
+
+
 
 		shader.Bind();
 		shader.setMat4("projection", projection);
@@ -280,10 +277,14 @@ int main() {
 		shader.setVec3("light.ambient", light.getAmbientVector());
 		shader.setVec3("light.specular", glm::vec3(light.specular));
 		//set material
-		shader.setVec3("material.ambient", materialPresets[selectedMaterial].ambient);
-		shader.setVec3("material.diffuse", materialPresets[selectedMaterial].diffuse);
-		shader.setVec3("material.specular", materialPresets[selectedMaterial].specular);
-		shader.setFloat("material.shininess", materialPresets[selectedMaterial].shininess);
+		shader.setInt("material.diffuse", containerTexture.getIndex());
+		shader.setInt("material.specular", containerSpecularTexture.getIndex());
+		shader.setInt("material.emission", containerEmissionTexture.getIndex());
+		shader.setFloat("material.shininess", 32);
+
+		containerTexture.Bind();
+		containerSpecularTexture.Bind();
+		containerEmissionTexture.Bind();
 
 		renderer.Draw(objectVA, 36);
 

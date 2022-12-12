@@ -12,4 +12,6 @@ public:
 
 	void Bind();
 	void UnBind();
+
+	inline int getIndex() const { return m_Index; };
 };

@@ -138,5 +138,14 @@
     <Image Include="ori-and-niro.png">
       <Filter>Resource Files\images</Filter>
     </Image>
+    <Image Include="container2.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="container2_specular.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="container2_emission.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -13,7 +13,7 @@ struct MaterialPreset {
 };
 struct Light {
 	glm::vec3 position = glm::vec3(0.0f,0.0f,0.0f);
-	float diffuse = 0.5f;
+	float diffuse = 0.8f;
 	float specular = 1.0f;
 	float color[3] = {1.0f,1.0f,1.0f};
 
