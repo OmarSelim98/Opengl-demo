@@ -11,20 +11,6 @@ struct MaterialPreset {
 	glm::vec3 specular;
 	float shininess;
 };
-struct Light {
-	glm::vec3 position = glm::vec3(0.0f,0.0f,0.0f);
-	float diffuse = 0.8f;
-	float specular = 1.0f;
-	float color[3] = {1.0f,1.0f,1.0f};
-
-	glm::vec3 getDiffuseVector()
-	{
-		return glm::vec3(diffuse) * glm::make_vec3(color);
-	}
-	glm::vec3 getAmbientVector() {
-		return getDiffuseVector() * 0.2f;
-	}
-};
 
 
 std::vector<MaterialPreset> ImportMaterials() {

@@ -17,6 +17,7 @@
 #include "Camera.h"
 #include "MaterialPresets.h"
 #include "Texture.h"
+#include "LightCasters.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
@@ -78,7 +79,18 @@ unsigned int indices[] = {
 		0, 1, 3, // first triangle
 		1, 2, 3  // second triangle
 };
-//Camera Config
+glm::vec3 cubePositions[] = {
+	glm::vec3(0.0f,  0.0f,  0.0f),
+	glm::vec3(2.0f,  5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f,  3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f,  2.0f, -2.5f),
+	glm::vec3(1.5f,  0.2f, -1.5f),
+	glm::vec3(-1.3f,  1.0f, -1.5f)
+};
 // for texture
 unsigned char* imgData;
 unsigned int texture1, texture2;
@@ -181,7 +193,13 @@ int main() {
 
 	int selectedMaterial = 0;
 	materialPresets = ImportMaterials();
-	Light light;
+	DirectionalLight dirLight;
+	dirLight.direction = glm::vec3(0.0f,-0.8f,0.0f);
+	PointLight pointLight;
+	pointLight.position = glm::vec3(0.0f,0.0f,-5.0f);
+
+	SpotLight spotLight;
+	
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
@@ -200,12 +218,28 @@ int main() {
 			//ImGui::SliderFloat("Brightness", &brightness1, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			//ImGui::SliderFloat("ModelRotationZ", &rotation, -180.0f, 180.0);
 			ImGui::Text("FOV : %.1f", camera.GetFOV());
+			if (ImGui::CollapsingHeader("Directional Light")) {
+				ImGui::DragFloat3("Point light position", glm::value_ptr(dirLight.direction), 0.1, glm::radians(-180.0), glm::radians(180.0));
 
-			if (ImGui::CollapsingHeader("Light")) {
-				ImGui::ColorEdit3("Color", (float*)&light.color);
+				ImGui::ColorEdit3("Color", (float*)&dirLight.color);
 				//ImGui::SliderFloat("Ambient", );
-				ImGui::SliderFloat("Diffuse", &light.diffuse, 0.0f, 1.0f);
-				ImGui::SliderFloat("Specular", &light.specular, 0.0f, 1.0f);
+				ImGui::SliderFloat("Diffuse", &dirLight.diffuse, 0.0f, 1.0f);
+				ImGui::SliderFloat("Specular", &dirLight.specular, 0.0f, 1.0f);
+			}
+			if (ImGui::CollapsingHeader("Point Light")) {
+				ImGui::DragFloat3("Point light position", glm::value_ptr(pointLight.position), 0.5, -500.0, 500.0);
+				ImGui::ColorEdit3("Color", (float*)&pointLight.color);
+				//ImGui::SliderFloat("Ambient", );
+				ImGui::SliderFloat("Diffuse", &pointLight.diffuse, 0.0f,2.0f);
+				ImGui::SliderFloat("Specular", &pointLight.specular, 0.0f, 1.0f);
+			}
+			if (ImGui::CollapsingHeader("FlashLight")) {
+				//ImGui::DragFloat3("Point light position", glm::value_ptr(pointLight.position), 0.5, -500.0, 500.0);
+				ImGui::ColorEdit3("Color", (float*)&spotLight.color);
+				//ImGui::SliderFloat("Ambient", );
+				ImGui::SliderFloat("Diffuse", &spotLight.diffuse, 0.0f, 1.0f);
+				ImGui::SliderFloat("Specular", &spotLight.specular, 0.0f, 1.0f);
+				ImGui::SliderFloat("Radius", &spotLight.innerCutoff, 0.0, 1.0);
 			}
 
 			if (ImGui::CollapsingHeader("Material")) {
@@ -239,7 +273,7 @@ int main() {
 		camera.ApplySmoothMovement(deltaTime);
 
 
-		// Render Object
+		/* LIGHT MODELS */
 		glm::mat4 model = glm::mat4(1.0);
 		glm::mat4 view = glm::mat4(1.0);
 		glm::mat4 projection;
@@ -248,34 +282,58 @@ int main() {
 		view = camera.GetViewMatrix();
 
 
-		light.position = glm::vec3(2.0, (float)cos(glfwGetTime()) * 2, -2.0);
+		//pointLight.position = glm::vec3(2.0, (float)cos(glfwGetTime()) * 2, 5.0);
+		//pointLight.position = glm::vec3(0.0, 0.0, -3.0);
 		model = glm::scale(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0.5f));
-		model = translate(model, light.position);
+		model = translate(model, pointLight.position);
 		lightningShader.Bind();
 		lightningShader.setMat4("projection", projection);
 		lightningShader.setMat4("view", view);
 		lightningShader.setMat4("model", model);
-		lightningShader.setVec3("lightColor", light.color[0], light.color[1], light.color[2]);
+		lightningShader.setVec3("lightColor", pointLight.color[0], pointLight.color[1], pointLight.color[2]);
 
 		renderer.Draw(lightVA, 36);
 
+		/* BOX MODELS */
 		model = glm::scale(glm::mat4(1.0), glm::vec3(3.0f, 3.0f, 3.0f));
 		model = translate(model, glm::vec3(0.0, 0.0, -4.0));
-		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(1.0f, 0.25f, 0.0f));
-
-
 
 		shader.Bind();
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
-		shader.setMat4("model", model);
+		//shader.setMat4("model", model);
 		//shader.setVec3("objectColor", glm::vec3(0.3f, 0.3f, 0.6f));
 		shader.setVec3("viewPos", camera.GetPosition());
-		shader.setVec3("light.position", light.position);
-		shader.setVec3("light.color", light.color[0], light.color[1], light.color[2]);
-		shader.setVec3("light.diffuse", light.getDiffuseVector());
-		shader.setVec3("light.ambient", light.getAmbientVector());
-		shader.setVec3("light.specular", glm::vec3(light.specular));
+		//Directional Light : mainly revolves around the direction of the light, without regards to its position.
+		shader.setVec3("dirLight.direction", dirLight.direction);
+		shader.setVec3("dirLight.diffuse", dirLight.getDiffuseVector());
+		shader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
+		shader.setVec3("dirLight.specular", dirLight.getSpecularVector());
+
+		//Point Light : depends on the light's position and direction, also the effect of the light on a fragment is calculated through a quadratic equation
+		shader.setVec3("pointLight.position", pointLight.position);
+		shader.setVec3("pointLight.diffuse", pointLight.getDiffuseVector());
+		shader.setVec3("pointLight.ambient", pointLight.getAmbientVector());
+		shader.setVec3("pointLight.specular", pointLight.getSpecularVector());
+		shader.setFloat("pointLight.constant", pointLight.constant);
+		shader.setFloat("pointLight.linear", pointLight.linear);
+		shader.setFloat("pointLight.quadratic", pointLight.quadratic);
+
+		//SpotLight (in flashlight mode)
+		spotLight.position = camera.GetPosition();
+		spotLight.direction = camera.GetFront();
+
+		shader.setVec3("spotLight.position", spotLight.position);
+		shader.setVec3("spotLight.direction", spotLight.direction);
+		shader.setFloat("spotLight.innerCutoff", spotLight.innerCutoff);
+		shader.setFloat("spotLight.outerCutoff", spotLight.outerCutoff);
+		shader.setVec3("spotLight.diffuse", spotLight.getDiffuseVector());
+		shader.setVec3("spotLight.ambient", spotLight.getAmbientVector());
+		shader.setVec3("spotLight.specular", spotLight.getSpecularVector());
+		shader.setFloat("spotLight.constant", spotLight.constant);
+		shader.setFloat("spotLight.linear", spotLight.linear);
+		shader.setFloat("spotLight.quadratic", spotLight.quadratic);
+
 		//set material
 		shader.setInt("material.diffuse", containerTexture.getIndex());
 		shader.setInt("material.specular", containerSpecularTexture.getIndex());
@@ -286,7 +344,16 @@ int main() {
 		containerSpecularTexture.Bind();
 		containerEmissionTexture.Bind();
 
-		renderer.Draw(objectVA, 36);
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, (float)glfwGetTime()* glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			shader.setMat4("model", model);
+
+			renderer.Draw(objectVA, 36);
+		}
 
 
 		ImGui::Render();

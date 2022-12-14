@@ -155,6 +155,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="LightCasters.h" />
     <ClInclude Include="MaterialPresets.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Texture.h" />

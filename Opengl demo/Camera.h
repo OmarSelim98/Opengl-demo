@@ -41,4 +41,5 @@ public:
 	inline bool IsMovementEnabled() const { return m_CanMove; };
 	inline float GetFOV() const { return m_FOV; };
 	inline glm::vec3 GetPosition() const { return m_Pos; };
+	inline glm::vec3 GetFront() const { return m_Front; };
 };
