@@ -1,15 +1,6 @@
 #include <glad/glad.h>
 #include "VertexArray.h"
 
-VertexArray::VertexArray()
-{
-	glGenVertexArrays(1, &m_RendererID);
-}
-
-VertexArray::~VertexArray()
-{
-	glDeleteVertexArrays(1, &m_RendererID);
-}
 
 void VertexArray::AddVertexBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout)
 {
@@ -21,6 +12,15 @@ void VertexArray::AddVertexBuffer(const VertexBuffer& vb,const VertexBufferLayou
 		glEnableVertexAttribArray(i);
 		offset += elements[i].count * HELPER::sizeOfGL(elements[i].type);
 	}
+}
+void VertexArray::Create()
+{
+	glGenVertexArrays(1, &m_RendererID);
+}
+
+void VertexArray::Destroy() const
+{
+	glDeleteVertexArrays(1, &m_RendererID);
 }
 
 void VertexArray::Bind() const

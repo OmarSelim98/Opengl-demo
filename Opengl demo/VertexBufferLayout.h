@@ -14,7 +14,7 @@ struct VertexBufferElement {
 class VertexBufferLayout {
 private:
 	bool m_IsManualStrideEnabled = false;
-	unsigned int m_Stride;
+	unsigned int m_Stride = 0;
 	std::vector<VertexBufferElement> m_Elements;
 
 public:

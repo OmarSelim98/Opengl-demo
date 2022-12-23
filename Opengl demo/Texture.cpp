@@ -10,8 +10,8 @@ Texture::Texture(const char * fileName) {
 	glGenTextures(1, &m_RendererID);
 	glBindTexture(GL_TEXTURE_2D, m_RendererID);
 	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load and generate the texture
@@ -31,9 +31,16 @@ Texture::Texture(const char * fileName) {
 	m_nextID += 1;
 }
 
-Texture::~Texture(){}
+Texture::~Texture(){
+	glDeleteTextures(1, &m_RendererID);
+}
 
 void Texture::Bind() {
+	glActiveTexture(GL_TEXTURE0 + m_Index);
+	glBindTexture(GL_TEXTURE_2D, m_RendererID);
+}
+
+void Texture::UnBind() {
 	glActiveTexture(GL_TEXTURE0 + m_Index);
 	glBindTexture(GL_TEXTURE_2D, m_RendererID);
 }

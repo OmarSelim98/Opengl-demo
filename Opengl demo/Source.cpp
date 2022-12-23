@@ -18,6 +18,7 @@
 #include "MaterialPresets.h"
 #include "Texture.h"
 #include "LightCasters.h"
+#include <assimp/config.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
@@ -153,11 +154,18 @@ int main() {
 	Shader shader("basic_shader.vert", "basic_shader.frag");
 	Shader lightningShader("lightning_shader.vert", "lightning_shader.frag");
 
-	// va, vb and layout for an object
+	//Model backpackModel("backpack/backpack.obj");
+
+	//Model carModel("Car/Car.obj");
+	//Model bookModel("book/models/Book1.obj");
+	Model bagModel("backpack/backpack.obj");
+	//// va, vb and layout for an object
 	VertexArray objectVA;
+	objectVA.Create();
 	objectVA.Bind();
 
-	VertexBuffer vb(vertices, sizeof(vertices));
+	VertexBuffer vb;
+	vb.Create(vertices, sizeof(vertices));
 
 	VertexBufferLayout objectLayout;
 	objectLayout.AddElement<float>(3); // position vector
@@ -169,14 +177,16 @@ int main() {
 	Texture containerTexture("container2.png");
 	Texture containerSpecularTexture("container2_specular.png");
 	Texture containerEmissionTexture("container2_emission.png");
+	Texture cookieTexture("cookie.png");
 
 	objectVA.UnBind();
 	vb.UnBind();
 
 	// create a va for light, with the same vb
 	VertexArray lightVA;
+	lightVA.Create();
 	lightVA.Bind();
-
+	vb.Bind();
 	VertexBufferLayout lightLayout;
 	lightLayout.SetStrideManually(true);
 	lightLayout.SetStride(8 * sizeof(float));
@@ -205,6 +215,8 @@ int main() {
 	/* ========== */
 	bool show_demo_window = true;
 
+	int w, h = 0;
+	glfwGetWindowSize(window,&w,&h);
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
 		updateDeltaTime();
@@ -281,19 +293,6 @@ int main() {
 		projection = glm::perspective(glm::radians(camera.GetFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		view = camera.GetViewMatrix();
 
-
-		//pointLight.position = glm::vec3(2.0, (float)cos(glfwGetTime()) * 2, 5.0);
-		//pointLight.position = glm::vec3(0.0, 0.0, -3.0);
-		model = glm::scale(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0.5f));
-		model = translate(model, pointLight.position);
-		lightningShader.Bind();
-		lightningShader.setMat4("projection", projection);
-		lightningShader.setMat4("view", view);
-		lightningShader.setMat4("model", model);
-		lightningShader.setVec3("lightColor", pointLight.color[0], pointLight.color[1], pointLight.color[2]);
-
-		renderer.Draw(lightVA, 36);
-
 		/* BOX MODELS */
 		model = glm::scale(glm::mat4(1.0), glm::vec3(3.0f, 3.0f, 3.0f));
 		model = translate(model, glm::vec3(0.0, 0.0, -4.0));
@@ -334,17 +333,18 @@ int main() {
 		shader.setFloat("spotLight.linear", spotLight.linear);
 		shader.setFloat("spotLight.quadratic", spotLight.quadratic);
 
-		//set material
-		shader.setInt("material.diffuse", containerTexture.getIndex());
-		shader.setInt("material.specular", containerSpecularTexture.getIndex());
-		shader.setInt("material.emission", containerEmissionTexture.getIndex());
-		shader.setFloat("material.shininess", 32);
+		shader.setInt("spotLight.cookie", cookieTexture.getIndex());
+		shader.setFloat("material.shininess", 32.0);
+		shader.setFloat("material.diffuse1", containerTexture.getIndex());
+		shader.setFloat("material.specular1", containerSpecularTexture.getIndex());
 
 		containerTexture.Bind();
 		containerSpecularTexture.Bind();
-		containerEmissionTexture.Bind();
+		cookieTexture.Bind();
 
-		for (unsigned int i = 0; i < 10; i++)
+		//renderer.Draw(backpackModel, shader);
+
+		/*for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -353,8 +353,13 @@ int main() {
 			shader.setMat4("model", model);
 
 			renderer.Draw(objectVA, 36);
-		}
+		}*/
 
+		shader.setMat4("model", model);
+
+		//renderer.Draw(carModel, shader);
+		//renderer.Draw(bookModel, shader);
+		renderer.Draw(bagModel, shader);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -368,6 +373,7 @@ int main() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+	//backpackModel.Destroy();
 	glfwTerminate();
 
 	return 0;

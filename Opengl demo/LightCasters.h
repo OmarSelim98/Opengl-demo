@@ -21,7 +21,7 @@ struct DirectionalLight {
 	glm::vec3 direction = glm::vec3(0.0f, 0.0f, 0.0f);
 	float diffuse = 0.8f;
 	float specular = 1.0f;
-	float color[3] = { 0.1f,0.3f,1.0f };
+	float color[3] = { 1.0f,1.0f,1.0f };
 
 	glm::vec3 getDiffuseVector()
 	{
@@ -40,7 +40,7 @@ struct PointLight {
 	float diffuse = 0.8f;
 	float specular = 1.0f;
 	float color[3] = { 1.0f,0.1f,0.1f };
-	
+
 	float constant = 1.0;
 	float linear = 0.09f;
 	float quadratic = 0.032;
