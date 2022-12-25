@@ -13,7 +13,7 @@ struct Light {
 		return glm::vec3(diffuse) * glm::make_vec3(color);
 	}
 	glm::vec3 getAmbientVector() {
-		return getDiffuseVector() * 0.2f;
+		return getDiffuseVector() * 0.5f;
 	}
 };
 

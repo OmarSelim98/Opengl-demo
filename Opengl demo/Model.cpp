@@ -94,56 +94,11 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
 
 	if (mesh->mMaterialIndex >= 0) { // we first check if this mesh has an applied material, also used to retrieve the actual material from the materials array in the scene
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		for (unsigned int i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
-		{
-			aiString str;
-			material->GetTexture(aiTextureType_DIFFUSE, i, &str);
-			bool skip = false;
-			for (unsigned int j = 0; j < textures_loaded.size(); j++)
-			{
-				if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-				{
-					textures.push_back(textures_loaded[j]);
-					skip = true;
-					break;
-				}
-			}
-			if (!skip) {
-				Tex texture;
-				texture.id = TextureFromFile(str.C_Str(), m_Directory);
-				texture.type = "diffuse";
-				texture.path = str.C_Str();
-				textures.push_back(texture);
-				textures_loaded.push_back(texture);
-			}
-		}
-		for (unsigned int i = 0; i < material->GetTextureCount(aiTextureType_SPECULAR); i++)
-		{
-			aiString str;
-			material->GetTexture(aiTextureType_SPECULAR, i, &str);
-			Tex texture;
-			texture.id = TextureFromFile(str.C_Str(), m_Directory);
-			texture.type = "specular";
-			texture.path = str.C_Str();
-			textures.push_back(texture);
-		}
-		//get diffuse textures
-		//for (int i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++) {
-		//	aiString texName;
-		//	material->GetTexture(aiTextureType_DIFFUSE, i, &texName);
+		std::vector<Tex> diffuseTextures = loadOptimizedTextures(aiTextureType_DIFFUSE, material, getTextureStringType(aiTextureType_DIFFUSE));
+		textures.insert(textures.end(), diffuseTextures.begin(), diffuseTextures.end());
+		std::vector<Tex> specularTextures = loadOptimizedTextures(aiTextureType_SPECULAR, material, getTextureStringType(aiTextureType_SPECULAR));
+		textures.insert(textures.end(), specularTextures.begin(), specularTextures.end());
 
-		//	std::string path = m_Directory + '/' + texName.C_Str();
-		//	textures.push_back(MeshTexture(path, i+1, DIFFUSE));
-		//}
-
-		////get specular textures
-		//for (int i = 0; i < material->GetTextureCount(aiTextureType_SPECULAR); i++) {
-		//	aiString texName;
-		//	material->GetTexture(aiTextureType_SPECULAR, i, &texName);
-
-		//	std::string path = m_Directory + '/' + texName.C_Str();
-		//	textures.push_back(MeshTexture(path, i+1, SPECULAR));
-		//}
 	}
 	std::cout << "SUCCESS::ASSIMP::MESH::TEXTURES::PROCCESSED" << std::endl;
 
@@ -186,4 +141,44 @@ unsigned int Model::TextureFromFile(std::string fileName, std::string directory)
 	stbi_image_free(data);
 
 	return id;
+}
+
+std::vector<Tex> Model::loadOptimizedTextures(aiTextureType type, aiMaterial* material, std::string typeStr)
+{
+	std::vector<Tex> textures;
+
+	for (unsigned int i = 0; i < material->GetTextureCount(type); i++)
+	{
+		aiString str;
+		material->GetTexture(type, i, &str);
+		bool skip = false;
+		for (unsigned int j = 0; j < textures_loaded.size(); j++)
+		{
+			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+			{
+				textures.push_back(textures_loaded[j]);
+				skip = true;
+				break;
+			}
+		}
+		if (!skip) {
+			Tex texture;
+			texture.id = TextureFromFile(str.C_Str(), m_Directory);
+			texture.type = typeStr;
+			texture.path = str.C_Str();
+			textures.push_back(texture);
+			textures_loaded.push_back(texture);
+		}
+	}
+	return textures;
+}
+
+std::string Model::getTextureStringType(aiTextureType type)
+{
+	std::string newType = "diffuse";
+	switch (type) {
+		case aiTextureType_DIFFUSE: newType = "diffuse";
+		case aiTextureType_SPECULAR: newType = "specular";
+	};
+	return newType;
 }

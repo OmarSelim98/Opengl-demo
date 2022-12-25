@@ -66,7 +66,7 @@ void main()
     
     vec3 result = vec3(0.0f);
     result   += calculateDirectionalLight(dirLight, material, Normal, normalize(viewPos - FragPos));
-    result   += calculatePointLight(pointLight, material, Normal, normalize(viewPos - FragPos));
+    //result   += calculatePointLight(pointLight, material, Normal, normalize(viewPos - FragPos));
    // result   += calculateSpotLight(spotLight, material);
     FragColor = vec4(result, 1.0);
 }

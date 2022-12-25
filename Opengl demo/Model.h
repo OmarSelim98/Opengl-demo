@@ -19,4 +19,6 @@ private:
 	void processNode(const aiNode* node, const aiScene* scene);
 	Mesh processMesh(const aiMesh* mesh, const aiScene* scene);
 	unsigned int TextureFromFile(std::string fileName, std::string directory);
+	std::vector<Tex> loadOptimizedTextures(aiTextureType type, aiMaterial* material, std::string typeStr);
+	std::string getTextureStringType(aiTextureType type);
 };

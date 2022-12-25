@@ -26,12 +26,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void updateDeltaTime();
 
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 float brightness1 = 1.0f;
 float brightness2 = 0.75f;
 
-float clearColors[3] = { 0.0f,0.0f,0.0f };
+float clearColors[3] = { 0.5f,0.5f,0.5f };
 float vertices[] = {
 	// positions          // normals           // texture coords
 	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
