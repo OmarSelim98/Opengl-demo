@@ -60,15 +60,21 @@ uniform DirLight dirLight;
 uniform PointLight pointLight;
 uniform SpotLight spotLight;
 
+float near = 0.1; 
+float far  = 100.0; 
+  
+float LinearizeDepth(float depth) 
+{
+    float z = depth * 2.0 - 1.0; // back to NDC 
+    return (2.0 * near * far) / (far + near - z * (far - near));	
+}
 
 void main()
 {
-    
     vec3 result = vec3(0.0f);
-    result   += calculateDirectionalLight(dirLight, material, Normal, normalize(viewPos - FragPos));
-    result   += calculatePointLight(pointLight, material, Normal, normalize(viewPos - FragPos));
-   // result   += calculateSpotLight(spotLight, material);
-    FragColor = vec4(result, 1.0);
+    vec3 viewDir = normalize(viewPos - FragPos);
+
+    FragColor = vec4(vec3(LinearizeDepth(gl_FragCoord.z)/far), 1.0);
 }
 
 vec3 calculateDirectionalLight(DirLight dirLight, Material mat, vec3 normal, vec3 viewDir){

@@ -156,9 +156,9 @@ int main() {
 
 	//Model backpackModel("backpack/backpack.obj");
 
-	//Model carModel("Car/Car.obj");
+	Model carModel("Car/Car.obj");
 	//Model bookModel("book/models/Book1.obj");
-	Model bagModel("backpack/backpack.obj");
+	//Model bagModel("backpack/backpack.obj");
 	//// va, vb and layout for an object
 	VertexArray objectVA;
 	objectVA.Create();
@@ -344,7 +344,7 @@ int main() {
 
 		//renderer.Draw(backpackModel, shader);
 
-		/*for (unsigned int i = 0; i < 10; i++)
+		for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -353,13 +353,13 @@ int main() {
 			shader.setMat4("model", model);
 
 			renderer.Draw(objectVA, 36);
-		}*/
+		}
 
-		shader.setMat4("model", model);
+		shader.setMat4("model", glm::mat4(1.0));
 
 		//renderer.Draw(carModel, shader);
 		//renderer.Draw(bookModel, shader);
-		renderer.Draw(bagModel, shader);
+		renderer.Draw(carModel, shader);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
