@@ -2,12 +2,12 @@
 
 void Renderer::Clear() const {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 void Renderer::Clear(float* color) const {
 	glClearColor(color[0], color[1], color[2], 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 void Renderer::Draw(const VertexArray& va, unsigned int size) const {
 	va.Bind();
@@ -50,7 +50,7 @@ void Renderer::Draw(Mesh& mesh, Shader& shader)
     glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
-    mesh.VA().Bind();
-    glDrawElements(GL_TRIANGLES, mesh.Indicies().GetCount(), GL_UNSIGNED_INT, 0);
-    mesh.VA().UnBind();
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(mesh.Indicies().size()), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }

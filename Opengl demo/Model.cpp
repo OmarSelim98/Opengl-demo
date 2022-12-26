@@ -88,15 +88,14 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
 			indices.push_back(face.mIndices[j]);
 	}
 	std::cout << "SUCCESS::ASSIMP::MESH::INDICIES::PROCESSED" << std::endl;
-
 	//textures
 	std::vector<Tex> textures;
-
 	if (mesh->mMaterialIndex >= 0) { // we first check if this mesh has an applied material, also used to retrieve the actual material from the materials array in the scene
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Tex> diffuseTextures = loadOptimizedTextures(aiTextureType_DIFFUSE, material, getTextureStringType(aiTextureType_DIFFUSE));
+
+		std::vector<Tex> diffuseTextures = loadOptimizedTextures(aiTextureType_DIFFUSE, material,"diffuse");
 		textures.insert(textures.end(), diffuseTextures.begin(), diffuseTextures.end());
-		std::vector<Tex> specularTextures = loadOptimizedTextures(aiTextureType_SPECULAR, material, getTextureStringType(aiTextureType_SPECULAR));
+		std::vector<Tex> specularTextures = loadOptimizedTextures(aiTextureType_SPECULAR, material,"specular");
 		textures.insert(textures.end(), specularTextures.begin(), specularTextures.end());
 
 	}
@@ -112,11 +111,7 @@ unsigned int Model::TextureFromFile(std::string fileName, std::string directory)
 	unsigned int id;
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
 
 	std::string path = directory + '/' + fileName;
 	// load and generate the texture
@@ -133,6 +128,12 @@ unsigned int Model::TextureFromFile(std::string fileName, std::string directory)
 			format = GL_RGBA;
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// set the texture wrapping/filtering options (on the currently bound texture object)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else
 	{
@@ -151,6 +152,7 @@ std::vector<Tex> Model::loadOptimizedTextures(aiTextureType type, aiMaterial* ma
 	{
 		aiString str;
 		material->GetTexture(type, i, &str);
+
 		bool skip = false;
 		for (unsigned int j = 0; j < textures_loaded.size(); j++)
 		{

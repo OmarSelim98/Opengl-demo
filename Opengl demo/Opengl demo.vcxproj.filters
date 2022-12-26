@@ -148,6 +148,12 @@
     <None Include="materials_presets.mp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="stencil_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="stencil_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

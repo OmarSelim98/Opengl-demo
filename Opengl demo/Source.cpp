@@ -26,76 +26,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void updateDeltaTime();
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 1080;
+const int WINDOW_HEIGHT = 720;
 float brightness1 = 1.0f;
 float brightness2 = 0.75f;
 
 float clearColors[3] = { 0.5f,0.5f,0.5f };
-float vertices[] = {
-	// positions          // normals           // texture coords
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-};
-unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 3  // second triangle
-};
-glm::vec3 cubePositions[] = {
-	glm::vec3(0.0f,  0.0f,  0.0f),
-	glm::vec3(2.0f,  5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f,  3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f,  2.0f, -2.5f),
-	glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-// for texture
-unsigned char* imgData;
-unsigned int texture1, texture2;
-
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -121,7 +57,7 @@ int main() {
 	}
 	glfwMakeContextCurrent(window);
 
-	glfwSwapInterval(1);
+	//glfwSwapInterval(1);
 	//Adjust viewport to the resized window.
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -144,6 +80,7 @@ int main() {
 
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); // z buffer
+	glEnable(GL_STENCIL_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // blending mode
 
 	/* Init cam here */
@@ -152,50 +89,15 @@ int main() {
 	glfwSetScrollCallback(window, scroll_callback);
 
 	Shader shader("basic_shader.vert", "basic_shader.frag");
-	Shader lightningShader("lightning_shader.vert", "lightning_shader.frag");
+	Shader stencilShader("stencil_shader.vert", "stencil_shader.frag");
 
 	//Model backpackModel("backpack/backpack.obj");
 
 	//Model carModel("Car/Car.obj");
 	//Model bookModel("book/models/Book1.obj");
-	Model bagModel("backpack/backpack.obj");
+	//Model bagModel("backpack/backpack.obj");
+	Model macheteModel("machete2/machete2.obj");
 	//// va, vb and layout for an object
-	VertexArray objectVA;
-	objectVA.Create();
-	objectVA.Bind();
-
-	VertexBuffer vb;
-	vb.Create(vertices, sizeof(vertices));
-
-	VertexBufferLayout objectLayout;
-	objectLayout.AddElement<float>(3); // position vector
-	objectLayout.AddElement<float>(3); // normals vector
-	objectLayout.AddElement<float>(2); // texture vector
-
-	objectVA.AddVertexBuffer(vb, objectLayout);
-
-	Texture containerTexture("container2.png");
-	Texture containerSpecularTexture("container2_specular.png");
-	Texture containerEmissionTexture("container2_emission.png");
-	Texture cookieTexture("cookie.png");
-
-	objectVA.UnBind();
-	vb.UnBind();
-
-	// create a va for light, with the same vb
-	VertexArray lightVA;
-	lightVA.Create();
-	lightVA.Bind();
-	vb.Bind();
-	VertexBufferLayout lightLayout;
-	lightLayout.SetStrideManually(true);
-	lightLayout.SetStride(8 * sizeof(float));
-	lightLayout.AddElement<float>(3);
-
-	lightVA.AddVertexBuffer(vb, lightLayout);
-
-	lightVA.UnBind();
-	vb.UnBind();
 
 	Renderer renderer;
 
@@ -215,8 +117,6 @@ int main() {
 	/* ========== */
 	bool show_demo_window = true;
 
-	int w, h = 0;
-	glfwGetWindowSize(window,&w,&h);
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
 		updateDeltaTime();
@@ -292,16 +192,14 @@ int main() {
 
 		projection = glm::perspective(glm::radians(camera.GetFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		view = camera.GetViewMatrix();
-
-		/* BOX MODELS */
-		model = glm::scale(glm::mat4(1.0), glm::vec3(3.0f, 3.0f, 3.0f));
-		model = translate(model, glm::vec3(0.0, 0.0, -4.0));
+		model = glm::translate(model, glm::vec3(0.0));
 
 		shader.Bind();
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
-		//shader.setMat4("model", model);
-		//shader.setVec3("objectColor", glm::vec3(0.3f, 0.3f, 0.6f));
+		shader.setMat4("model", model);
+		//shader.setFloat("wtf",(float) (sin(glfwGetTime() * 2.0 - 1.0)  ));
+
 		shader.setVec3("viewPos", camera.GetPosition());
 		//Directional Light : mainly revolves around the direction of the light, without regards to its position.
 		shader.setVec3("dirLight.direction", dirLight.direction);
@@ -309,57 +207,47 @@ int main() {
 		shader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
 		shader.setVec3("dirLight.specular", dirLight.getSpecularVector());
 
-		//Point Light : depends on the light's position and direction, also the effect of the light on a fragment is calculated through a quadratic equation
-		shader.setVec3("pointLight.position", pointLight.position);
-		shader.setVec3("pointLight.diffuse", pointLight.getDiffuseVector());
-		shader.setVec3("pointLight.ambient", pointLight.getAmbientVector());
-		shader.setVec3("pointLight.specular", pointLight.getSpecularVector());
-		shader.setFloat("pointLight.constant", pointLight.constant);
-		shader.setFloat("pointLight.linear", pointLight.linear);
-		shader.setFloat("pointLight.quadratic", pointLight.quadratic);
-
-		//SpotLight (in flashlight mode)
-		spotLight.position = camera.GetPosition();
-		spotLight.direction = camera.GetFront();
-
-		shader.setVec3("spotLight.position", spotLight.position);
-		shader.setVec3("spotLight.direction", spotLight.direction);
-		shader.setFloat("spotLight.innerCutoff", spotLight.innerCutoff);
-		shader.setFloat("spotLight.outerCutoff", spotLight.outerCutoff);
-		shader.setVec3("spotLight.diffuse", spotLight.getDiffuseVector());
-		shader.setVec3("spotLight.ambient", spotLight.getAmbientVector());
-		shader.setVec3("spotLight.specular", spotLight.getSpecularVector());
-		shader.setFloat("spotLight.constant", spotLight.constant);
-		shader.setFloat("spotLight.linear", spotLight.linear);
-		shader.setFloat("spotLight.quadratic", spotLight.quadratic);
-
-		shader.setInt("spotLight.cookie", cookieTexture.getIndex());
 		shader.setFloat("material.shininess", 32.0);
-		shader.setFloat("material.diffuse1", containerTexture.getIndex());
-		shader.setFloat("material.specular1", containerSpecularTexture.getIndex());
 
-		containerTexture.Bind();
-		containerSpecularTexture.Bind();
-		cookieTexture.Bind();
 
-		//renderer.Draw(backpackModel, shader);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // only update the fragments that passes the stencil test and the depth test
+		glStencilFunc(GL_ALWAYS, 1, 0xFF); // all to-be drawn fragments should pass the stencil test
+		glStencilMask(0xFF); // enable writing to the stencil buffer
 
-		/*for (unsigned int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, (float)glfwGetTime()* glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			shader.setMat4("model", model);
 
-			renderer.Draw(objectVA, 36);
-		}*/
+		renderer.Draw(macheteModel, shader);
 
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // all to-be drawn fragments should not pass the stencil test
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		// scale the model a little bit
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0));
+		//model = glm::scale(glm::mat4(1.0), glm::vec3(1.1f, 1.1f, 1.1f));
+
+		stencilShader.Bind();
+		stencilShader.setMat4("projection", projection);
+		stencilShader.setMat4("view", view);
+		stencilShader.setMat4("model", model);
+
+		renderer.Draw(macheteModel, stencilShader);
+
+		glStencilMask(0x00);
+
+		shader.Bind();
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0,1.0,-4.0));
 		shader.setMat4("model", model);
 
-		//renderer.Draw(carModel, shader);
-		//renderer.Draw(bookModel, shader);
-		renderer.Draw(bagModel, shader);
+		renderer.Draw(macheteModel, shader);
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
+
+		/*shader.setMat4("model", model);
+		renderer.Draw(macheteModel, shader);*/
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

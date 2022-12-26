@@ -27,10 +27,12 @@ class Mesh {
 		VertexBuffer m_VB;
 		VertexBufferLayout m_BufferLayout;
 		IndexBuffer m_IB;
+		unsigned int VBO, EBO;
 	public:
+		unsigned int VAO;
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indicies, std::vector<Tex> textures);
 		void Destroy();
 		inline VertexArray VA() const { return m_VA; };
-		inline IndexBuffer Indicies() const { return m_IB; };
+		inline std::vector<unsigned int> Indicies() const { return m_Indicies; };
 		inline std::vector<Tex> Textures() const { return m_Textures; };
 };

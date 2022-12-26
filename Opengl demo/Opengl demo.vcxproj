@@ -178,6 +178,8 @@
     <None Include="lightning_shader.frag" />
     <None Include="lightning_shader.vert" />
     <None Include="materials_presets.mp" />
+    <None Include="stencil_shader.frag" />
+    <None Include="stencil_shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg" />
