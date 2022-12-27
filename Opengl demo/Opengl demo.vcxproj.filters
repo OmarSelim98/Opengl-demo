@@ -154,6 +154,12 @@
     <None Include="stencil_shader.vert">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="grass_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="grass_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

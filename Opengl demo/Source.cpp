@@ -19,11 +19,15 @@
 #include "Texture.h"
 #include "LightCasters.h"
 #include <assimp/config.h>
+#include<map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Takes a window's pointer, and the new width & height.
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void prepareGrass(VertexArray& va, VertexBuffer& vb, VertexBufferLayout& layout, unsigned int& texId);
+void drawGrass(VertexArray& va, unsigned int& texId, Shader& shader);
+std::map<float, glm::vec3> sortPositions(std::vector<glm::vec3> positions, Camera& camera);
 void updateDeltaTime();
 
 const int WINDOW_WIDTH = 1080;
@@ -38,6 +42,19 @@ float lastFrame = 0.0f;
 Camera camera(glm::vec3(-4.0f, 0.0f, 4.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
 
 std::vector<MaterialPreset> materialPresets;
+
+std::vector<glm::vec3> grassPos;
+float grassVertices[] = {
+	// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+	0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+	1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+};
+std::map<float, glm::vec3> sortedGrass;
 
 int main() {
 
@@ -90,6 +107,7 @@ int main() {
 
 	Shader shader("basic_shader.vert", "basic_shader.frag");
 	Shader stencilShader("stencil_shader.vert", "stencil_shader.frag");
+	Shader grassShader("grass_shader.vert", "grass_shader.frag");
 
 	//Model backpackModel("backpack/backpack.obj");
 
@@ -98,6 +116,12 @@ int main() {
 	//Model bagModel("backpack/backpack.obj");
 	Model macheteModel("machete2/machete2.obj");
 	//// va, vb and layout for an object
+	VertexArray grassVA;
+	VertexBuffer grassVB;
+	VertexBufferLayout grassLayout;
+	unsigned int grassTexture;
+
+	prepareGrass(grassVA, grassVB, grassLayout, grassTexture);
 
 	Renderer renderer;
 
@@ -106,12 +130,12 @@ int main() {
 	int selectedMaterial = 0;
 	materialPresets = ImportMaterials();
 	DirectionalLight dirLight;
-	dirLight.direction = glm::vec3(0.0f,-0.8f,0.0f);
+	dirLight.direction = glm::vec3(0.0f, -0.8f, 0.0f);
 	PointLight pointLight;
-	pointLight.position = glm::vec3(0.0f,0.0f,-5.0f);
+	pointLight.position = glm::vec3(0.0f, 0.0f, -5.0f);
 
 	SpotLight spotLight;
-	
+
 	/* Render Config */
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //Wireframe polygons
 	/* ========== */
@@ -142,7 +166,7 @@ int main() {
 				ImGui::DragFloat3("Point light position", glm::value_ptr(pointLight.position), 0.5, -500.0, 500.0);
 				ImGui::ColorEdit3("Color", (float*)&pointLight.color);
 				//ImGui::SliderFloat("Ambient", );
-				ImGui::SliderFloat("Diffuse", &pointLight.diffuse, 0.0f,2.0f);
+				ImGui::SliderFloat("Diffuse", &pointLight.diffuse, 0.0f, 2.0f);
 				ImGui::SliderFloat("Specular", &pointLight.specular, 0.0f, 1.0f);
 			}
 			if (ImGui::CollapsingHeader("FlashLight")) {
@@ -219,7 +243,7 @@ int main() {
 
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // all to-be drawn fragments should not pass the stencil test
 		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
 		// scale the model a little bit
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0));
@@ -234,17 +258,26 @@ int main() {
 
 		glStencilMask(0x00);
 
+		//sort grass
+		sortedGrass.clear();
+		sortedGrass = sortPositions(grassPos, camera);
+
 		shader.Bind();
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0,1.0,-4.0));
+		model = glm::translate(model, glm::vec3(0.0, 1.0, -4.0));
 		shader.setMat4("model", model);
-
-		renderer.Draw(macheteModel, shader);
 
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 
+		renderer.Draw(macheteModel, shader);
+
+
+		grassShader.Bind();
+		grassShader.setMat4("projection", projection);
+		grassShader.setMat4("view", view);
+		drawGrass(grassVA, grassTexture, grassShader);
 
 		/*shader.setMat4("model", model);
 		renderer.Draw(macheteModel, shader);*/
@@ -301,4 +334,77 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS) {
 		camera.DisableMovement(window);
 	}
+}
+void prepareGrass(VertexArray& va, VertexBuffer& vb, VertexBufferLayout& layout, unsigned int& texId) {
+	grassPos.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+	grassPos.push_back(glm::vec3(1.5f, 0.0f, 0.51f));
+	grassPos.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+	grassPos.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+	grassPos.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
+	va.Create();
+	va.Bind();
+
+	vb.Create(&grassVertices[0], sizeof(grassVertices));
+
+	layout.AddElement<float>(3);
+	layout.AddElement<float>(2);
+
+	va.AddVertexBuffer(vb, layout);
+
+	va.UnBind();
+	vb.UnBind();
+
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("window.png", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nrChannels == 1)
+			format = GL_RED;
+		else if (nrChannels == 3)
+			format = GL_RGB;
+		else if (nrChannels == 4)
+			format = GL_RGBA;
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// set the texture wrapping/filtering options (on the currently bound texture object)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+}
+void drawGrass(VertexArray& va, unsigned int& texId, Shader& shader) {
+	//shader.Bind();
+	glActiveTexture(GL_TEXTURE0);
+	shader.setInt("grassTexture", 0);
+	glBindTexture(GL_TEXTURE_2D, texId);
+
+	va.Bind();
+	for (std::map<float, glm::vec3>::reverse_iterator it = sortedGrass.rbegin(); it != sortedGrass.rend(); ++it) {
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, it->second);
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+	va.UnBind();
+}
+std::map<float, glm::vec3> sortPositions(std::vector<glm::vec3> positions, Camera& camera) {
+	std::map<float, glm::vec3> sorted;
+	for (int i = 0; i < positions.size(); i++) {
+		float distance = glm::length(camera.GetPosition() - positions[i]);
+		sorted[distance] = positions[i];
+	}
+	return sorted;
 }

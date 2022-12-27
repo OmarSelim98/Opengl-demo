@@ -175,6 +175,8 @@
   <ItemGroup>
     <None Include="basic_shader.frag" />
     <None Include="basic_shader.vert" />
+    <None Include="grass_shader.frag" />
+    <None Include="grass_shader.vert" />
     <None Include="lightning_shader.frag" />
     <None Include="lightning_shader.vert" />
     <None Include="materials_presets.mp" />
