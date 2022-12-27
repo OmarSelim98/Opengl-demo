@@ -98,8 +98,10 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); // z buffer
 	glEnable(GL_STENCIL_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // blending mode
+	glEnable(GL_CULL_FACE);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // blending mode
+	glCullFace(GL_BACK);
 	/* Init cam here */
 
 	glfwSetCursorPosCallback(window, mouse_callback);
