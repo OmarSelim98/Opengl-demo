@@ -174,11 +174,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="basic_shader.frag" />
+    <None Include="lines_shader.geom" />
     <None Include="basic_shader.vert" />
     <None Include="grass_shader.frag" />
     <None Include="grass_shader.vert" />
     <None Include="lightning_shader.frag" />
     <None Include="lightning_shader.vert" />
+    <None Include="lines_shader.frag" />
+    <None Include="lines_shader.vert" />
     <None Include="materials_presets.mp" />
     <None Include="mirror_shader.frag" />
     <None Include="mirror_shader.vert" />

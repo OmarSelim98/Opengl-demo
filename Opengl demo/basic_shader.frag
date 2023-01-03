@@ -49,26 +49,17 @@ vec3 calculateDirectionalLight(DirLight dirLight, Material mat, vec3 normal, vec
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
-in mat4 ScreenSpaceMat;
 
 out vec4 FragColor;
 
 uniform vec3 viewPos;
 uniform Material material;
 uniform DirLight dirLight;
-uniform PointLight pointLight;
-uniform SpotLight spotLight;
-
 
 void main()
 {
-    
     vec3 result = vec3(0.0);
     result   += calculateDirectionalLight(dirLight, material, Normal, normalize(viewPos - FragPos));
-    result   += calculateDirectionalLight(dirLight, material, Normal, normalize(viewPos - FragPos));
-
-    //result   += calculatePointLight(pointLight, material, Normal, normalize(viewPos - FragPos));
-   // result   += calculateSpotLight(spotLight, material);
     FragColor = vec4(result, 1.0);
 }
 

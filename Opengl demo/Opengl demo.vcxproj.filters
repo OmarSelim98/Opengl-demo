@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\images">
       <UniqueIdentifier>{4116f571-a5c3-4bc8-9965-d104268bb98a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shaders\lines">
+      <UniqueIdentifier>{67c0aac2-c660-4e89-b38f-b614411f184f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\glad\src\glad.c">
@@ -177,6 +180,15 @@
     </None>
     <None Include="skybox_shader.frag">
       <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="lines_shader.vert">
+      <Filter>Resource Files\shaders\lines</Filter>
+    </None>
+    <None Include="lines_shader.frag">
+      <Filter>Resource Files\shaders\lines</Filter>
+    </None>
+    <None Include="lines_shader.geom">
+      <Filter>Resource Files\shaders\lines</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

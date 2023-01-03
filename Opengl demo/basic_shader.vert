@@ -7,11 +7,10 @@ out vec3 FragPos;
 out vec2 TexCoords;
 out mat4 ScreenSpaceMat;
 
-layout (std140) uniform Matrices{
-    mat4 projection;
-    mat4 view;
-};
 
+
+uniform mat4 projection;
+uniform mat4 view;
 uniform mat4 model;
 
 void main()
