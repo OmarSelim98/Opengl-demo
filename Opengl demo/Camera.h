@@ -31,6 +31,7 @@ public:
 	void OnScroll(GLFWwindow* window, double xoffset, double yoffset);
 	void ApplySmoothMovement(float deltaTime);
 	glm::mat4 GetViewMatrix();
+	glm::mat4 LookAtDirection(glm::vec3 direction);
 	void StepForward();
 	void StepBackward();
 	void StepRight();
@@ -38,6 +39,8 @@ public:
 
 	inline void setSpeed(float speed) { m_Speed = speed; };
 
+	inline void SetYaw(float newVal) { m_Yaw = newVal; updateCameraVectors(); };
+	inline void SetFOV(float newVal) { m_FOV = newVal; };
 	inline bool IsMovementEnabled() const { return m_CanMove; };
 	inline float GetFOV() const { return m_FOV; };
 	inline glm::vec3 GetPosition() const { return m_Pos; };

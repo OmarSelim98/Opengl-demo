@@ -160,6 +160,24 @@
     <None Include="grass_shader.frag">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="quad_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="quad_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="mirror_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="mirror_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="skybox_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="skybox_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

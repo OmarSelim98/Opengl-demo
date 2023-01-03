@@ -30,18 +30,35 @@ void drawGrass(VertexArray& va, unsigned int& texId, Shader& shader);
 std::map<float, glm::vec3> sortPositions(std::vector<glm::vec3> positions, Camera& camera);
 void updateDeltaTime();
 
+
+unsigned int CreateTexture2D(const char* fileName);
+unsigned int CreateFrameBuffer(unsigned int texColorBuffer, unsigned int renderBuffer);
+unsigned int CreateFrameBufferTexture(int width, int height);
+unsigned int CreateRenderBuffer(unsigned int format, int width, int height);
+unsigned int CreateCubeMap(std::vector<std::string> sides);
+
 const int WINDOW_WIDTH = 1080;
 const int WINDOW_HEIGHT = 720;
 float brightness1 = 1.0f;
 float brightness2 = 0.75f;
 
 float clearColors[3] = { 0.5f,0.5f,0.5f };
+float mirrorClearColors[3] = { 0.4f,0.4f,0.5f };
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-Camera camera(glm::vec3(-4.0f, 0.0f, 4.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
+Camera mirrorCamera(glm::vec3(0.0f, 0.0f, -10.0f), WINDOW_WIDTH, WINDOW_HEIGHT);
 
 std::vector<MaterialPreset> materialPresets;
+
+unsigned int postProcessingFrameBuffer;
+unsigned int postProcessingRenderBuffer;
+unsigned int postProcessingColorBuffer;
+
+unsigned int mirrorFrameBuffer;
+unsigned int mirrorRenderBuffer;
+unsigned int mirrorColorBuffer;
 
 std::vector<glm::vec3> grassPos;
 float grassVertices[] = {
@@ -53,6 +70,76 @@ float grassVertices[] = {
 	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
 	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
 	1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+};
+float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	// positions   // texCoords
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	 1.0f,  1.0f,  1.0f, 1.0f
+};
+float mirrorVertices[] = {
+	//pos				//tex coords
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	 1.0f,  1.0f,  1.0f, 1.0f
+};
+std::vector<std::string> cubeFaces { "skybox/right.jpg",
+	"skybox/left.jpg",
+	"skybox/top.jpg",
+	"skybox/bottom.jpg",
+	"skybox/front.jpg",
+	"skybox/back.jpg" };
+float skyboxVertices[] = {
+	// positions          
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	 1.0f, -1.0f,  1.0f
 };
 std::map<float, glm::vec3> sortedGrass;
 
@@ -98,18 +185,19 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); // z buffer
 	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // blending mode
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 	/* Init cam here */
 
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	Shader shader("basic_shader.vert", "basic_shader.frag");
-	Shader stencilShader("stencil_shader.vert", "stencil_shader.frag");
-	Shader grassShader("grass_shader.vert", "grass_shader.frag");
+	Shader quadShader("quad_shader.vert", "quad_shader.frag");
+	Shader mirrorShader("mirror_shader.vert", "mirror_shader.frag");
+	Shader skyboxShader("skybox_shader.vert", "skybox_shader.frag");
 
 	//Model backpackModel("backpack/backpack.obj");
 
@@ -117,6 +205,7 @@ int main() {
 	//Model bookModel("book/models/Book1.obj");
 	//Model bagModel("backpack/backpack.obj");
 	Model macheteModel("machete2/machete2.obj");
+	Model poolTable("pool-table/pool-table.obj");
 	//// va, vb and layout for an object
 	VertexArray grassVA;
 	VertexBuffer grassVB;
@@ -124,6 +213,70 @@ int main() {
 	unsigned int grassTexture;
 
 	prepareGrass(grassVA, grassVB, grassLayout, grassTexture);
+
+	postProcessingColorBuffer = CreateFrameBufferTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+	postProcessingRenderBuffer = CreateRenderBuffer(GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+	postProcessingFrameBuffer = CreateFrameBuffer(postProcessingColorBuffer, postProcessingRenderBuffer);
+
+	mirrorColorBuffer = CreateFrameBufferTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+	mirrorRenderBuffer = CreateRenderBuffer(GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+	mirrorFrameBuffer = CreateFrameBuffer(mirrorColorBuffer, mirrorRenderBuffer);
+
+	VertexArray quadVA;
+	VertexBuffer quadVB;
+	VertexBufferLayout quadLayout;
+
+	quadVA.Create();
+	quadVA.Bind();
+	quadVB.Create(quadVertices, sizeof(quadVertices));
+	quadLayout.AddElement<float>(2);
+	quadLayout.AddElement<float>(2);
+	quadVA.AddVertexBuffer(quadVB, quadLayout);
+	quadVA.UnBind();
+	quadVB.UnBind();
+
+	/* MIRROR MODEL SETUP */
+	VertexArray mirrorVA;
+	VertexBuffer mirrorVB;
+	VertexBufferLayout mirrorLayout;
+
+	mirrorVA.Create();
+	mirrorVA.Bind();
+	mirrorVB.Create(mirrorVertices, sizeof(mirrorVertices));
+	mirrorLayout.AddElement<float>(2);
+	mirrorLayout.AddElement<float>(2);
+	mirrorVA.AddVertexBuffer(mirrorVB, mirrorLayout);
+	mirrorVA.UnBind();
+	mirrorVB.UnBind();
+
+	unsigned int mirrorTexture = CreateTexture2D("mirror1.jpg");
+	mirrorCamera.SetFOV(32.0);
+
+	/* CUBEMAP STEUP */
+	unsigned int skyboxTexture = CreateCubeMap(cubeFaces);
+	VertexArray skyboxVA;
+	VertexBuffer skyboxVB;
+	VertexBufferLayout skyboxLayout;
+
+	skyboxVA.Create();
+	skyboxVA.Bind();
+	skyboxVB.Create(skyboxVertices, sizeof(skyboxVertices));
+	skyboxLayout.AddElement<float>(3);
+	skyboxVA.AddVertexBuffer(skyboxVB, skyboxLayout);
+	skyboxVA.UnBind();
+	skyboxVB.UnBind();
+
+	/* Uniform buffer objects */
+	shader.bindUniformBlock("Matrices", 0);
+	mirrorShader.bindUniformBlock("Matrices", 0);
+
+	unsigned int uboMatrices;
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW); // specify all the shared uniform blocks
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices,0, 2*sizeof(glm::mat4)); // bind ubo matrix to index 0 starting from offset 0 to the end of the size of the data inside it.
+
 
 	Renderer renderer;
 
@@ -207,11 +360,62 @@ int main() {
 			ImGui::End();
 		}
 		// Rendering commands start
+		mirrorCamera.SetYaw(90.0); // look at the positive z axis
+
+		glm::vec3 mirrorToCameraDirection = glm::normalize(mirrorCamera.GetPosition() - camera.GetPosition());
+		glm::vec3 mirrorDirection = glm::reflect(mirrorToCameraDirection, mirrorCamera.GetFront());
+		// Reflected render
+		glBindFramebuffer(GL_FRAMEBUFFER, mirrorFrameBuffer);
+		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		//glFrontFace(GL_CCW);
+		renderer.Clear(mirrorClearColors);
+		//mirrorCamera.SetYaw(sin(glfwGetTime()) * 45 + 90);
+
+		glm::mat4 mirrorProjection = glm::perspective(glm::radians(mirrorCamera.GetFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 mirrorView = mirrorCamera.LookAtDirection(mirrorDirection);
+		glm::mat4 mirrorModel = glm::translate(glm::mat4(1.0), glm::vec3(0.0));
+		//cube map start
+		glDepthFunc(GL_LEQUAL);
+
+		skyboxShader.Bind();
+		skyboxShader.setMat4("projection", mirrorProjection);
+		skyboxShader.setMat4("view", glm::mat4(glm::mat3(mirrorView)));
+		skyboxShader.setInt("skybox", 0);
+		skyboxVA.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+		//cube map end
+
+		shader.Bind();
+		shader.setMat4("projection", mirrorProjection);
+		shader.setMat4("view", mirrorView);
+		shader.setMat4("model", mirrorModel);
+		shader.setVec3("viewPos", mirrorCamera.GetPosition());
+		shader.setVec3("dirLight.direction", dirLight.direction);
+		shader.setVec3("dirLight.diffuse", dirLight.getDiffuseVector());
+		shader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
+		shader.setVec3("dirLight.specular", dirLight.getSpecularVector());
+		shader.setFloat("material.shininess", 32.0);
+		
+
+		renderer.Draw(macheteModel, shader);
+
+		mirrorModel = glm::mat4(1.0);
+		mirrorModel = glm::translate(mirrorModel, glm::vec3(0.0, 1.0, -4.0));
+		shader.setMat4("model", mirrorModel);
+
+		renderer.Draw(poolTable, shader);
+
+		// Normal Render
+		glBindFramebuffer(GL_FRAMEBUFFER, postProcessingFrameBuffer);
+		glEnable(GL_DEPTH_TEST);
+
 		renderer.Clear(clearColors);
 		camera.ApplySmoothMovement(deltaTime);
 
-
-		/* LIGHT MODELS */
 		glm::mat4 model = glm::mat4(1.0);
 		glm::mat4 view = glm::mat4(1.0);
 		glm::mat4 projection;
@@ -220,69 +424,78 @@ int main() {
 		view = camera.GetViewMatrix();
 		model = glm::translate(model, glm::vec3(0.0));
 
-		shader.Bind();
-		shader.setMat4("projection", projection);
-		shader.setMat4("view", view);
-		shader.setMat4("model", model);
-		//shader.setFloat("wtf",(float) (sin(glfwGetTime() * 2.0 - 1.0)  ));
+		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+		shader.Bind();
+		shader.setMat4("model", model);
 		shader.setVec3("viewPos", camera.GetPosition());
 		//Directional Light : mainly revolves around the direction of the light, without regards to its position.
 		shader.setVec3("dirLight.direction", dirLight.direction);
 		shader.setVec3("dirLight.diffuse", dirLight.getDiffuseVector());
 		shader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
 		shader.setVec3("dirLight.specular", dirLight.getSpecularVector());
-
 		shader.setFloat("material.shininess", 32.0);
-
-
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // only update the fragments that passes the stencil test and the depth test
-		glStencilFunc(GL_ALWAYS, 1, 0xFF); // all to-be drawn fragments should pass the stencil test
-		glStencilMask(0xFF); // enable writing to the stencil buffer
-
 
 		renderer.Draw(macheteModel, shader);
 
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // all to-be drawn fragments should not pass the stencil test
-		glStencilMask(0x00);
-		//glDisable(GL_DEPTH_TEST);
-		// scale the model a little bit
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0));
-		//model = glm::scale(glm::mat4(1.0), glm::vec3(1.1f, 1.1f, 1.1f));
+		
 
-		stencilShader.Bind();
-		stencilShader.setMat4("projection", projection);
-		stencilShader.setMat4("view", view);
-		stencilShader.setMat4("model", model);
-
-		renderer.Draw(macheteModel, stencilShader);
-
-		glStencilMask(0x00);
-
-		//sort grass
-		sortedGrass.clear();
-		sortedGrass = sortPositions(grassPos, camera);
-
-		shader.Bind();
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0, 1.0, -4.0));
 		shader.setMat4("model", model);
 
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		//glEnable(GL_DEPTH_TEST);
+		renderer.Draw(poolTable, shader);
+		//
+		// Render Mirror
+		//glDisable(GL_CULL_FACE);
+		mirrorShader.Bind();
+		model = glm::mat4(1.0);
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		model = glm::translate(model, mirrorCamera.GetPosition());
+		//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		renderer.Draw(macheteModel, shader);
+		mirrorShader.setMat4("model", model);
+		mirrorShader.setInt("mirrorTexture", 0);
+		mirrorShader.setInt("mirrorTexture1", 1);
+		mirrorVA.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, mirrorColorBuffer);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, mirrorTexture);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof(mirrorVertices));
 
+		// cube map start
+		glDepthFunc(GL_LEQUAL);
 
-		grassShader.Bind();
-		grassShader.setMat4("projection", projection);
-		grassShader.setMat4("view", view);
-		drawGrass(grassVA, grassTexture, grassShader);
+		skyboxShader.Bind();
+		skyboxShader.setMat4("projection", projection);
+		skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+		skyboxShader.setInt("skybox", 0);
+		skyboxVA.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+		// cube map end
+		// QUAD RENDER
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		//glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
 
+		quadShader.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		quadShader.setInt("screenTexture", 0);
+		quadVA.Bind();
+		glBindTexture(GL_TEXTURE_2D, postProcessingColorBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		/*shader.setMat4("model", model);
 		renderer.Draw(macheteModel, shader);*/
+		quadVA.UnBind();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -409,4 +622,107 @@ std::map<float, glm::vec3> sortPositions(std::vector<glm::vec3> positions, Camer
 		sorted[distance] = positions[i];
 	}
 	return sorted;
+}
+unsigned int CreateFrameBuffer(unsigned int texColorBuffer, unsigned int renderBuffer) {
+	unsigned int _id;
+	glGenFramebuffers(1, &_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, _id);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); // set color buffer (texture).
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return _id;
+};
+unsigned int CreateFrameBufferTexture(int width, int height) {
+	unsigned int _id;
+	glGenTextures(1, &_id);
+	glBindTexture(GL_TEXTURE_2D, _id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return _id;
+};
+unsigned int CreateRenderBuffer(unsigned int format, int width, int height) {
+	unsigned int _id;
+	glGenRenderbuffers(1, &_id);
+	glBindRenderbuffer(GL_RENDERBUFFER, _id);
+	glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	return _id;
+};
+
+unsigned int CreateTexture2D(const char* fileName) {
+	unsigned int texId;
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(fileName, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nrChannels == 1)
+			format = GL_RED;
+		else if (nrChannels == 3)
+			format = GL_RGB;
+		else if (nrChannels == 4)
+			format = GL_RGBA;
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// set the texture wrapping/filtering options (on the currently bound texture object)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	return texId;
+}
+
+unsigned int CreateCubeMap(std::vector<std::string> sides) {
+	stbi_set_flip_vertically_on_load(false);
+	unsigned int _id;
+	glGenTextures(1, &_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, _id);
+
+	int width, height, nrChannels;
+	unsigned char* data;
+
+	for (int i = 0; i < sides.size(); i++) {
+		data = stbi_load(sides[i].c_str(), &width, &height, &nrChannels, 0);
+
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		}
+		else
+		{
+			std::cout << "Cubemap tex failed to load at path: " << sides[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	stbi_set_flip_vertically_on_load(true);
+
+	return _id;
 }

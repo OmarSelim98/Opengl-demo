@@ -46,6 +46,45 @@ public:
 
 		ID = CreateProgram(vertexID,fragmentID,true);
 	}
+	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
+	{
+		std::string vertexCode;
+		std::string fragmentCode;
+		std::string geometryCode;
+		std::ifstream vShaderFile;
+		std::ifstream fShaderFile;
+		std::ifstream gShaderFile;
+
+		try {
+			vShaderFile.open(vertexPath);
+			fShaderFile.open(fragmentPath);
+			gShaderFile.open(geometryPath);
+
+			std::stringstream vStream, fStream, gStream;
+
+			vStream << vShaderFile.rdbuf();
+			fStream << fShaderFile.rdbuf();
+			gStream << gShaderFile.rdbuf();
+
+			vShaderFile.close();
+			fShaderFile.close();
+			gShaderFile.close();
+
+			vertexCode = vStream.str();
+			fragmentCode = fStream.str();
+			geometryCode = gStream.str();
+		}
+		catch (std::ifstream::failure e)
+		{
+			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+		}
+
+		unsigned int vertexID = CreateShader(GL_VERTEX_SHADER, vertexCode.c_str());
+		unsigned int geometryID = CreateShader(GL_GEOMETRY_SHADER, geometryCode.c_str());
+		unsigned int fragmentID = CreateShader(GL_FRAGMENT_SHADER, fragmentCode.c_str());
+
+		ID = CreateProgram(vertexID, geometryID, fragmentID, true);
+	}
 
 	void Bind()
 	{
@@ -74,6 +113,12 @@ public:
 	void setVec3(const std::string& name, float f1, float f2, float f3) {
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), f1, f2, f3);
 	}
+	unsigned int getUniformBlockID(std::string name) {
+		return glGetUniformBlockIndex(ID, name.c_str());
+	}
+	void bindUniformBlock(std::string name, int id) {
+		glUniformBlockBinding(ID, glGetUniformBlockIndex(ID, name.c_str()), id);
+	}
 private:
 
 	unsigned int CreateShader(unsigned int shaderType, const char* shaderSource) {
@@ -96,6 +141,25 @@ private:
 		char infoLog[512];
 		unsigned int programID = glCreateProgram();
 		glAttachShader(programID, vertexShaderID);
+		glAttachShader(programID, fragmentShaderID);
+		glLinkProgram(programID);
+		glGetProgramiv(programID, GL_LINK_STATUS, &success);
+		if (!success) {
+			glGetProgramInfoLog(programID, 512, NULL, infoLog);
+			std::cout << "ERROR :: SHADER :: PROGRAM :: LINKING FAILED\n" << infoLog << std::endl;
+		}
+		if (deleteShaders) {
+			glDeleteShader(vertexShaderID);
+			glDeleteShader(fragmentShaderID);
+		}
+		return programID;
+	}
+	unsigned int CreateProgram(unsigned int vertexShaderID, unsigned int geometryShaderID , unsigned int fragmentShaderID, bool deleteShaders) {
+		int success;
+		char infoLog[512];
+		unsigned int programID = glCreateProgram();
+		glAttachShader(programID, vertexShaderID);
+		glAttachShader(programID, geometryShaderID);
 		glAttachShader(programID, fragmentShaderID);
 		glLinkProgram(programID);
 		glGetProgramiv(programID, GL_LINK_STATUS, &success);

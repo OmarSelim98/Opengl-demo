@@ -66,6 +66,10 @@ glm::mat4 Camera::GetViewMatrix() {
 	return glm::lookAt(m_Pos, m_Pos + m_Front, m_Up);
 }
 
+glm::mat4 Camera::LookAtDirection(glm::vec3 direction) {
+	return glm::lookAt(m_Pos, m_Pos + direction, m_Up);
+}
+
 void Camera::updateCameraVectors() {
 	m_Direction.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 	m_Direction.y = sin(glm::radians(m_Pitch));

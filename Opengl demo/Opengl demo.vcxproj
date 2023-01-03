@@ -180,6 +180,12 @@
     <None Include="lightning_shader.frag" />
     <None Include="lightning_shader.vert" />
     <None Include="materials_presets.mp" />
+    <None Include="mirror_shader.frag" />
+    <None Include="mirror_shader.vert" />
+    <None Include="quad_shader.frag" />
+    <None Include="quad_shader.vert" />
+    <None Include="skybox_shader.frag" />
+    <None Include="skybox_shader.vert" />
     <None Include="stencil_shader.frag" />
     <None Include="stencil_shader.vert" />
   </ItemGroup>
