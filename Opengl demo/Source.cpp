@@ -64,9 +64,14 @@ int main() {
 		return -1;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	Camera camera(glm::vec3(0.0, 0.0, -4.0), WINDOW_WIDTH, WINDOW_HEIGHT);
-	Shader mainShader("basic_shader.vert", "basic_shader.frag");
-	Shader linesShader("lines_shader.vert", "lines_shader.frag", "lines_shader.geom");
+
+	Shader mainShader("basic_shader.vert", "basic_shader.frag", "basic_shader.geom");
+	Shader normalsShader("normals_shader.vert", "normals_shader.frag", "normals_shader.geom");
 
 	Model mainModel("machete2/machete2.obj");
 
@@ -82,6 +87,8 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 	glBindVertexArray(0);
 
+	camera.SetYaw(90);
+	
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 1.0f, 100.f);
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 model = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, 3.0f));
@@ -92,16 +99,11 @@ int main() {
 	//Loop : Swap Buffers and Check events.
 	while (!glfwWindowShouldClose(window)) {
 		renderer.Clear(clearColors);
-		camera.SetYaw(90);
-		view = camera.GetViewMatrix();
-		linesShader.Bind();
-		linesShader.setMat4("p", projection);
-		linesShader.setMat4("v", view);
-		linesShader.setMat4("m", model);
-		glBindVertexArray(vao);
-		glDrawArrays(GL_POINTS, 0, 4);
 
 		mainShader.Bind();
+
+		//model = glm::rotate(model, glm::radians((float)glfwGetTime() * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
 
 		mainShader.setVec3("viewPos", camera.GetPosition());
 
@@ -112,9 +114,18 @@ int main() {
 		mainShader.setVec3("dirLight.direction", dirLight.direction);
 		mainShader.setVec3("dirLight.diffuse", dirLight.getDiffuseVector());
 		mainShader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
-		mainShader.setVec3("dirLight.specular",dirLight.getSpecularVector());
+		mainShader.setVec3("dirLight.specular", dirLight.getSpecularVector());
+		mainShader.setFloat("material.shininess", 32.0);
 
 		renderer.Draw(mainModel, mainShader);
+
+		normalsShader.Bind();
+
+		normalsShader.setMat4("p", projection);
+		normalsShader.setMat4("v", view);
+		normalsShader.setMat4("m", model);
+
+		renderer.Draw(mainModel, normalsShader);
 		// Rendering commands end
 		glfwSwapBuffers(window);
 		glfwPollEvents();

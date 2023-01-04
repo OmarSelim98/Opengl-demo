@@ -22,6 +22,12 @@
     <Filter Include="Resource Files\shaders\lines">
       <UniqueIdentifier>{67c0aac2-c660-4e89-b38f-b614411f184f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shaders\basic">
+      <UniqueIdentifier>{3d90d32e-3f3d-460b-b49d-184325342307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\shaders\normals">
+      <UniqueIdentifier>{d5d4bf25-ae4b-4a19-9282-112fabaf752c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\glad\src\glad.c">
@@ -136,12 +142,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="basic_shader.vert">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="basic_shader.frag">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
     <None Include="lightning_shader.frag">
       <Filter>Resource Files\shaders</Filter>
     </None>
@@ -189,6 +189,24 @@
     </None>
     <None Include="lines_shader.geom">
       <Filter>Resource Files\shaders\lines</Filter>
+    </None>
+    <None Include="basic_shader.frag">
+      <Filter>Resource Files\shaders\basic</Filter>
+    </None>
+    <None Include="basic_shader.vert">
+      <Filter>Resource Files\shaders\basic</Filter>
+    </None>
+    <None Include="basic_shader.geom">
+      <Filter>Resource Files\shaders\basic</Filter>
+    </None>
+    <None Include="normals_shader.vert">
+      <Filter>Resource Files\shaders\normals</Filter>
+    </None>
+    <None Include="normals_shader.frag">
+      <Filter>Resource Files\shaders\normals</Filter>
+    </None>
+    <None Include="normals_shader.geom">
+      <Filter>Resource Files\shaders\normals</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
