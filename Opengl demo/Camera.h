@@ -20,7 +20,7 @@ private:
 	glm::vec3 m_Direction;
 	float m_Sensitivity = 0.1f;
 	float m_Speed = 2.5f;
-	float m_SmoothVelocity = 2.5f;
+	float m_SmoothVelocity = 1.5f;
 	float m_FOV = 45.0f;
 	void updateCameraVectors();
 public:

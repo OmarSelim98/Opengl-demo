@@ -15,7 +15,6 @@ void Camera::DisableMovement(GLFWwindow* window) {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); //capture mouse.
 }
 void Camera::OnCursorPositionChange(GLFWwindow* window, double xpos, double ypos) {
-	if (m_CanMove) {
 
 		if (m_FirstMouse) // initially set to true
 		{
@@ -48,7 +47,6 @@ void Camera::OnCursorPositionChange(GLFWwindow* window, double xpos, double ypos
 
 		//update direction vector
 		updateCameraVectors();
-	}
 }
 void Camera::OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
 	m_FOV -= (float)yoffset;
@@ -58,9 +56,9 @@ void Camera::OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
 		m_FOV = 45.0f;
 };
 void Camera::ApplySmoothMovement(float deltaTime) {
-	if (m_CanMove) {
+
 		m_SmoothVelocity = m_Speed * deltaTime;
-	}
+
 };
 glm::mat4 Camera::GetViewMatrix() {
 	return glm::lookAt(m_Pos, m_Pos + m_Front, m_Up);

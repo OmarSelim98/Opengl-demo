@@ -143,13 +143,9 @@
     <ClCompile Include="..\..\..\Opengl Dependencies\Includes\ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="MeshTexture.cpp" />
-    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="stbi_loader.cpp" />
-    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VertexArray.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexBufferLayout.cpp" />
@@ -161,10 +157,8 @@
     <ClInclude Include="LightCasters.h" />
     <ClInclude Include="MaterialPresets.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="MeshTexture.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Texture.h" />
     <ClInclude Include="VertexArray.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="resource.h" />
@@ -186,6 +180,8 @@
     <None Include="materials_presets.mp" />
     <None Include="mirror_shader.frag" />
     <None Include="mirror_shader.vert" />
+    <None Include="model_shader.frag" />
+    <None Include="model_shader.vert" />
     <None Include="normals_shader.frag" />
     <None Include="normals_shader.geom" />
     <None Include="normals_shader.vert" />

@@ -78,18 +78,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader_class.h">
@@ -125,9 +113,6 @@
     <ClInclude Include="MaterialPresets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LightCasters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -135,9 +120,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,6 +189,12 @@
     </None>
     <None Include="normals_shader.geom">
       <Filter>Resource Files\shaders\normals</Filter>
+    </None>
+    <None Include="model_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="model_shader.frag">
+      <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
