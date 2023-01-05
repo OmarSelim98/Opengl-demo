@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
+#include <iostream>
+#include "shader_class.h"
 
 struct Light {
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -32,6 +34,12 @@ struct DirectionalLight {
 	}
 	glm::vec3 getSpecularVector() {
 		return glm::vec3(specular);
+	}
+	void ApplyIn(std::string objectName ,Shader& shader) {
+		shader.setVec3(objectName + ".direction", direction);
+		shader.setVec3(objectName + ".ambient", getAmbientVector());
+		shader.setVec3(objectName + ".diffuse", getDiffuseVector());
+		shader.setVec3(objectName + ".specular", getSpecularVector());
 	}
 };
 

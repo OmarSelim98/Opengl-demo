@@ -75,8 +75,8 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //glfwSetCursorPosCallback(window, mouse_callback);
-    //glfwSetScrollCallback(window, scroll_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -101,28 +101,10 @@ int main()
     Shader ourShader("model_shader.vert", "model_shader.frag");
     Shader instancesShader("instances_shader.vert", "instances_shader.frag");
 
-    // VAO, VBO setup
+    // models setup
     // -------------------------
-    unsigned int vao, vbo, instancedVBO;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &instancedVBO);
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo); // main array buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-    glBindBuffer(GL_ARRAY_BUFFER, instancedVBO); // offsets (instances) array buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(offsets), offsets, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) (0));
-    glVertexAttribDivisor(2, 1); // update the attribute at location 2 every 1 instance.
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    DirectionalLight directionalLight;
+    Model planetModel("planet/planet.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -132,13 +114,20 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
-
+        camera.ApplySmoothMovement(deltaTime);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        instancesShader.Bind();
-        glBindVertexArray(vao);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 4);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.GetFOV()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.0f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 model = glm::mat4(1.0);
+
+        ourShader.Bind();
+        ourShader.setMat4("model", model);
+        ourShader.setMat4("view", view);
+        ourShader.setMat4("projection",projection);
+        directionalLight.ApplyIn("dirLight", ourShader);
+        planetModel.Draw(ourShader);
         
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -159,14 +148,14 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    /*if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.StepForward();
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.StepBackward();
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         camera.StepLeft();
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.StepRight();*/
+        camera.StepRight();
 
 }
 
