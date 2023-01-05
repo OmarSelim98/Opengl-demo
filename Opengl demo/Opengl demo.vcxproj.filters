@@ -28,6 +28,9 @@
     <Filter Include="Resource Files\shaders\normals">
       <UniqueIdentifier>{d5d4bf25-ae4b-4a19-9282-112fabaf752c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shaders\instances">
+      <UniqueIdentifier>{d5cd1054-7d2b-4887-acd0-5f12151902cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\glad\src\glad.c">
@@ -195,6 +198,12 @@
     </None>
     <None Include="model_shader.frag">
       <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="instances_shader.vert">
+      <Filter>Resource Files\shaders\instances</Filter>
+    </None>
+    <None Include="instances_shader.frag">
+      <Filter>Resource Files\shaders\instances</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

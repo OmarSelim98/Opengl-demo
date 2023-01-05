@@ -32,6 +32,25 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+//vertices
+float quadVertices[] = {
+    // positions     // colors
+    -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+     0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+    -0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
+
+    -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+     0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+     0.05f,  0.05f,  0.0f, 1.0f, 1.0f
+};
+
+float offsets[] = {
+    -0.5f, -0.5f,
+    -0.5f,  0.5f,
+     0.5f, -0.5f,
+     0.5f,  0.5f
+};
+
 int main()
 {
     // glfw: initialize and configure
@@ -56,8 +75,8 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    //glfwSetCursorPosCallback(window, mouse_callback);
+    //glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -80,12 +99,30 @@ int main()
     // build and compile shaders
     // -------------------------
     Shader ourShader("model_shader.vert", "model_shader.frag");
+    Shader instancesShader("instances_shader.vert", "instances_shader.frag");
 
-    // load models
-    // -----------
-    Model ourModel("backpack/backpack.obj");
+    // VAO, VBO setup
+    // -------------------------
+    unsigned int vao, vbo, instancedVBO;
 
-    DirectionalLight dirLight;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &instancedVBO);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo); // main array buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+    glBindBuffer(GL_ARRAY_BUFFER, instancedVBO); // offsets (instances) array buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(offsets), offsets, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) (0));
+    glVertexAttribDivisor(2, 1); // update the attribute at location 2 every 1 instance.
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -94,45 +131,15 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
-        // per-frame time logic
-        // --------------------
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        camera.ApplySmoothMovement(deltaTime);
-        // input
-        // -----
         processInput(window);
 
-        // render
-        // ------
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // don't forget to enable shader before setting uniforms
-        ourShader.Bind();
-
-        // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
-        ourShader.setVec3("ViewPos", camera.GetPosition());
-        ourShader.setVec3("dirLight.direction", dirLight.direction);
-        ourShader.setVec3("dirLight.ambient", dirLight.getAmbientVector());
-        ourShader.setVec3("dirLight.diffuse", dirLight.getDiffuseVector());
-        ourShader.setVec3("dirLight.specular", dirLight.getSpecularVector());
-
-
-        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0F, 1.0f));	// it's a bit too big for our scene, so scale it down
-        model = glm::rotate(model, glm::radians((float)glfwGetTime() * 90.0f), glm::vec3(0.0f,1.0f,0.0f));
-        ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
-
-
+        instancesShader.Bind();
+        glBindVertexArray(vao);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 4);
+        
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -152,14 +159,14 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    /*if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.StepForward();
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.StepBackward();
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         camera.StepLeft();
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.StepRight();
+        camera.StepRight();*/
 
 }
 
