@@ -193,7 +193,7 @@
     <None Include="normals_shader.geom">
       <Filter>Resource Files\shaders\normals</Filter>
     </None>
-    <None Include="model_shader.vert">
+    <None Include="normal_model_shader.vert">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="model_shader.frag">
@@ -204,6 +204,9 @@
     </None>
     <None Include="instances_shader.frag">
       <Filter>Resource Files\shaders\instances</Filter>
+    </None>
+    <None Include="instanced_model_shader.vert">
+      <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

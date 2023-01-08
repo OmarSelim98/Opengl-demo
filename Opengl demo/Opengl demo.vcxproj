@@ -169,6 +169,7 @@
   <ItemGroup>
     <None Include="basic_shader.frag" />
     <None Include="basic_shader.geom" />
+    <None Include="instanced_model_shader.vert" />
     <None Include="instances_shader.frag" />
     <None Include="instances_shader.vert" />
     <None Include="lines_shader.geom" />
@@ -183,7 +184,7 @@
     <None Include="mirror_shader.frag" />
     <None Include="mirror_shader.vert" />
     <None Include="model_shader.frag" />
-    <None Include="model_shader.vert" />
+    <None Include="normal_model_shader.vert" />
     <None Include="normals_shader.frag" />
     <None Include="normals_shader.geom" />
     <None Include="normals_shader.vert" />
