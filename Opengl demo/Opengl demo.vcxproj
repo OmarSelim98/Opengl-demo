@@ -71,8 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Yusuf\Documents\Omar\Opengl Dependencies\Includes;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Yusuf\Documents\Omar\Opengl Dependencies\Libraries;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>D:\Omar\Opengl Dependencies\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Omar\Opengl Dependencies\Libraries;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>D:\Omar\Opengl Dependencies\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Omar\Opengl Dependencies\Libraries;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -188,6 +192,8 @@
     <None Include="normals_shader.frag" />
     <None Include="normals_shader.geom" />
     <None Include="normals_shader.vert" />
+    <None Include="pbr_shader.frag" />
+    <None Include="pbr_shader.vert" />
     <None Include="quad_shader.frag" />
     <None Include="quad_shader.vert" />
     <None Include="skybox_shader.frag" />

@@ -31,6 +31,9 @@
     <Filter Include="Resource Files\shaders\instances">
       <UniqueIdentifier>{d5cd1054-7d2b-4887-acd0-5f12151902cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shaders\pbr">
+      <UniqueIdentifier>{1588fab5-cda5-4511-b517-7df32b6eae5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\glad\src\glad.c">
@@ -207,6 +210,12 @@
     </None>
     <None Include="instanced_model_shader.vert">
       <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="pbr_shader.vert">
+      <Filter>Resource Files\shaders\pbr</Filter>
+    </None>
+    <None Include="pbr_shader.frag">
+      <Filter>Resource Files\shaders\pbr</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
